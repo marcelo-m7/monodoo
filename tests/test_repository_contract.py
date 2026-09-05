@@ -96,6 +96,13 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn("_loadDefaultApp()", adapter)
         self.assertNotIn("loadRouterState()", adapter)
 
+    def test_ci_declares_required_release_gates(self):
+        workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+        self.assertIn("repository-contract:", workflow)
+        self.assertIn("odoo-runtime:", workflow)
+        self.assertIn("tests/runtime/prepare_database.sh", workflow)
+        self.assertIn("pytest tests/e2e -q", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()
