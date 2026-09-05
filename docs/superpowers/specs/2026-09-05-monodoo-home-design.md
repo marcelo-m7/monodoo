@@ -1,7 +1,7 @@
 # Monodoo Home — Odoo 19 Community Design
 
 Date: 2026-09-05
-Status: Design approved in chat; written specification pending user review
+Status: Approved
 Repository: `marcelo-m7/monodoo`
 Target: Odoo 19 Community
 License: LGPL-3
