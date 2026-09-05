@@ -1,7 +1,7 @@
 # Monodoo Home — Odoo 19 Community Design
 
 Date: 2026-09-05
-Status: Approved design, pending implementation plan
+Status: Design approved in chat; written specification pending user review
 Repository: `marcelo-m7/monodoo`
 Target: Odoo 19 Community
 License: LGPL-3
@@ -21,13 +21,13 @@ The design must remain generic. Nothing in `monodoo_core` or `monodoo_home` may 
 - Odoo 19 Community support.
 - Automatic Home after internal user login when `/odoo` has no valid action/state.
 - Preserve valid deep links and restored actions.
-- Render all root applications already allowed to the current user.
+- Render all root applications already allowed to the current user, excluding the Home navigation entry itself from the launcher grid.
 - Preserve Odoo application ordering.
 - Use the application name and icon already exposed by Odoo's menu service.
 - Local frontend search by application name.
 - Open applications using the standard Odoo menu/action service.
 - Keep the standard desktop apps dropdown available.
-- Add a Home entry to the apps navigation so users can return to the launcher.
+- Expose Home as a normal root-menu destination so users can return to the launcher through standard app navigation.
 - Preserve the standard mobile apps flow.
 - Fail open to the original Odoo default-app behavior if Monodoo Home cannot load.
 - Clean install and upgrade support.
@@ -74,14 +74,17 @@ It must not introduce unused models, configuration DSLs, queues, generic install
 
 Responsibilities:
 
-- Register the Home client action.
+- Register the Home `ir.actions.client`.
+- Register a normal root `ir.ui.menu` Home entry bound to that client action and available to internal users.
 - Render the application launcher as an Owl component.
 - Read the allowed root applications through Odoo's existing menu service.
+- Exclude the Monodoo Home root entry itself from the launcher cards.
 - Filter applications locally for search.
 - Open applications using the standard menu/action service.
-- Integrate Home into the standard apps navigation.
-- Adapt the default-app fallback so the neutral `/odoo` route opens Monodoo Home.
-- Delegate back to Odoo's original fallback if Monodoo Home fails.
+- Adapt the default-app fallback so neutral `/odoo` selects the Home root menu.
+- Delegate back to Odoo's original fallback if Monodoo Home cannot be selected.
+
+This approach avoids patching the standard navbar template merely to add a Home link: because Home is a normal root menu, the existing desktop and mobile application navigation can expose it naturally.
 
 ## 4. Odoo integration points
 
@@ -91,7 +94,7 @@ The design intentionally relies on a small number of existing Odoo 19 webclient 
 
 Odoo 19 `WebClient.loadRouterState()` attempts to restore the current action/state. If no state is loaded, it calls `_loadDefaultApp()`. The standard `_loadDefaultApp()` selects the first root application.
 
-Monodoo changes only this fallback path.
+Monodoo changes only this fallback path. The adapter searches the already-loaded root apps for the known Monodoo Home menu XML ID and selects it through the menu service. If Home is unavailable or selection fails, the adapter calls the original `_loadDefaultApp()` implementation.
 
 Expected behavior:
 
@@ -106,14 +109,30 @@ Odoo tries to restore valid state/action
         |
         +-- state/action exists --> preserve standard Odoo behavior
         |
-        +-- no valid state -------> Monodoo Home client action
+        +-- no valid state -------> select Monodoo Home root menu
+                                      |
+                                      +-- success --> Home client action
+                                      +-- failure --> original Odoo default app
 ```
 
 The adapter must be isolated in a small frontend file so an Odoo 20 migration has one obvious compatibility boundary to review.
 
-### 4.2 Application source
+### 4.2 Home as a standard root menu
 
-The Odoo 19 menu service already exposes `getApps()`, which returns the children of the root menu after Odoo has loaded menus for the current user.
+Home is represented by a normal root `ir.ui.menu` bound to the Monodoo client action. This gives the launcher a standard application-navigation identity instead of inventing a parallel navbar mechanism.
+
+The Home menu should:
+
+- Be available to internal users.
+- Have a stable XML ID used by the frontend adapter.
+- Be placed early in root-menu ordering for a predictable apps menu position, while the fallback adapter remains the authoritative mechanism for automatic Home after neutral login.
+- Be excluded from the launcher grid so the grid represents business applications rather than recursively listing Home.
+
+Because it is a standard root menu, desktop and mobile application navigation inherit the Home destination without a custom navbar replacement.
+
+### 4.3 Application source
+
+The Odoo 19 menu service exposes `getApps()`, which returns the children of the root menu after Odoo has loaded menus for the current user.
 
 Monodoo must use this service rather than querying `ir.ui.menu` independently.
 
@@ -124,18 +143,21 @@ Consequences:
 - New authorized applications appear automatically.
 - Applications the user cannot access do not appear.
 - Odoo's own application ordering is preserved.
+- The Home component only removes its own known root-menu entry before rendering app cards.
 
-### 4.3 Opening an application
+### 4.4 Opening an application
 
 App cards must open applications through the standard menu service, using the equivalent of `menuService.selectMenu(app)` rather than manually constructing URLs or dispatching arbitrary actions.
 
 This preserves Odoo's action behavior, breadcrumbs, current-app state, and menu synchronization.
 
-### 4.4 Apps navigation
+The same mechanism is used to select the Home root menu when returning to the launcher.
 
-The standard apps dropdown remains available on desktop. Monodoo must not turn the existing apps button into a replacement Home-only button.
+### 4.5 Standard apps navigation
 
-Instead, Home is exposed as an additional first-class destination in the apps navigation. On mobile, the existing `/odoo` / all-apps behavior should continue to lead naturally to the Monodoo Home when no explicit action is present.
+The standard apps dropdown remains untouched as a navigation component. Monodoo must not turn the existing apps button into a replacement Home-only button and must not replace the navbar template.
+
+Because Home is a normal root menu, it appears through the standard applications navigation. On mobile, the existing all-apps flow likewise retains its standard behavior and includes Home as another permitted root destination.
 
 ## 5. User experience
 
@@ -145,7 +167,7 @@ The v1 visual language is Odoo-native and neutral.
 
 ```text
 +------------------------------------------------------+
-| Odoo / standard navbar                  user / tray  |
+| Home / standard navbar                  user / tray  |
 +------------------------------------------------------+
 |                                                      |
 |                    Applications                      |
@@ -174,7 +196,7 @@ The default ordering is never replaced by alphabetical sorting.
 
 ### Empty state
 
-If the user has no root applications, the Home renders a clear neutral empty state instead of crashing.
+If the user has no business root applications after excluding Home, the Home renders a clear neutral empty state instead of crashing.
 
 ### Missing icon
 
@@ -184,7 +206,7 @@ An application without an icon must still render predictably using an Odoo-compa
 
 The feature is fail-open to standard Odoo behavior.
 
-If Monodoo Home cannot be resolved or executed during the default-app fallback, the adapter must invoke the original Odoo default-app behavior and allow the first permitted application to open.
+If the Home root menu cannot be found or its selection fails during the default-app fallback, the adapter must invoke the original Odoo default-app behavior and allow Odoo to open its normal first permitted application.
 
 This rule is critical: installing `monodoo_home` must never make the backend inaccessible merely because the custom launcher fails.
 
@@ -203,13 +225,12 @@ monodoo/
 │   └── repository_contract.py
 ├── monodoo_core/
 │   ├── __init__.py
-│   ├── __manifest__.py
-│   └── ...
+│   └── __manifest__.py
 └── monodoo_home/
     ├── __init__.py
     ├── __manifest__.py
     ├── data/
-    │   └── client_action.xml
+    │   └── home_action.xml
     ├── static/src/
     │   ├── home/
     │   │   ├── home.js
@@ -218,9 +239,10 @@ monodoo/
     │   └── webclient/
     │       └── default_home.js
     └── tests/
+        └── test_home.py
 ```
 
-Exact filenames may be adjusted during implementation if Odoo's native 19.0 patterns make a different location more appropriate, but the responsibility boundaries above must remain intact.
+Exact test filenames may be adjusted to the Odoo 19 test framework during implementation, but the responsibility boundaries above must remain intact.
 
 ## 8. Versioning and licensing
 
@@ -243,19 +265,21 @@ The release is accepted only when all of the following are proven:
 2. Upgrade of `monodoo_core` and `monodoo_home` succeeds.
 3. Internal login followed by neutral `/odoo` opens Monodoo Home.
 4. A valid Odoo deep link still opens its target action rather than Home.
-5. All root applications allowed to the user appear.
-6. Applications not allowed to the user do not appear.
-7. Application order matches Odoo's own menu order.
-8. Application icons come from Odoo menu data where available.
-9. Search works locally without an additional RPC.
-10. Clicking an application opens it through the standard Odoo menu/action mechanism.
-11. The standard desktop apps dropdown remains functional.
-12. Home remains reachable from apps navigation after opening another app.
-13. Standard mobile app navigation remains functional.
-14. No custom controller replaces or shadows `/odoo`.
-15. A Monodoo Home bootstrap failure falls back to Odoo's original default-app behavior.
-16. Assets compile and the webclient starts without JS/Owl errors.
-17. The addons have no FACODI-specific dependency or behavior.
+5. Home is represented by a standard permitted root menu and standard client action.
+6. All business root applications allowed to the user appear in the launcher.
+7. Applications not allowed to the user do not appear.
+8. The Home root entry is not duplicated as a launcher card.
+9. Application order matches Odoo's own menu order after excluding Home.
+10. Application icons come from Odoo menu data where available.
+11. Search works locally without an additional RPC.
+12. Clicking an application opens it through the standard Odoo menu/action mechanism.
+13. The standard desktop apps dropdown remains functional and exposes Home.
+14. Home remains reachable through standard app navigation after opening another app.
+15. Standard mobile app navigation remains functional and exposes Home.
+16. No custom controller replaces or shadows `/odoo`.
+17. A Monodoo Home bootstrap failure falls back to Odoo's original default-app behavior.
+18. Assets compile and the webclient starts without JS/Owl errors.
+19. The addons have no FACODI-specific dependency or behavior.
 
 ## 10. Test strategy
 
@@ -268,6 +292,7 @@ Fast checks on every commit:
 - `monodoo_home` depends on `web` and `monodoo_core`.
 - No FACODI dependencies.
 - No custom `/odoo` controller.
+- Home action and root-menu XML records exist.
 - Asset declarations exist and point to real files.
 - Module versions use the Odoo 19 version prefix.
 - LGPL-3 metadata is present.
@@ -277,14 +302,15 @@ Fast checks on every commit:
 Cover at minimum:
 
 - App list from menu service.
+- Exclusion of Home from launcher cards.
 - Card rendering.
 - Application without icon.
 - Empty application list.
 - Local search/filtering.
 - Selection via standard menu service.
-- Home navigation entry.
+- Selection of the Home root menu.
 - Default-app fallback.
-- Fallback to original Odoo behavior on Home failure.
+- Fallback to original Odoo behavior when Home is missing or fails.
 
 ### 10.3 Odoo 19 integration tests
 
@@ -297,7 +323,9 @@ fresh database
   -> compile/load assets
   -> authenticate internal user
   -> neutral /odoo opens Home
+  -> verify Home appears in standard app navigation
   -> open application from Home
+  -> return to Home through standard app navigation
   -> verify valid deep link
   -> verify permissions with restricted user
   -> upgrade modules
