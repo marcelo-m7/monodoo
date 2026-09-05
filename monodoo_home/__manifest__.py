@@ -5,6 +5,11 @@
     "category": "Productivity",
     "license": "LGPL-3",
     "depends": ["web", "monodoo_core"],
+    "data": ["data/home_action.xml"],
+    "assets": {
+        "web.assets_backend": ["monodoo_home/static/src/home/**/*"],
+        "web.assets_unit_tests": ["monodoo_home/static/tests/**/*.test.js"],
+    },
     "installable": True,
     "application": False,
 }
