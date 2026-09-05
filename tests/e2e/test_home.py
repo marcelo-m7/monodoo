@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from playwright.sync_api import Page, expect
 
-from tests.e2e.helpers import BASE_URL, login
+from tests.e2e.helpers import BASE_URL, login, wait_for_webclient
 
 
 def open_neutral_home(page: Page, login_name: str = "admin", password: str = "admin") -> None:
@@ -29,13 +29,13 @@ def test_valid_crm_deep_link_survives_reload(page: Page) -> None:
     app_card(page, "CRM").click()
     page.wait_for_function("neutral => window.location.href !== neutral", arg=neutral_url)
     deep_link = page.url
-    page.goto(deep_link, wait_until="networkidle")
+    page.goto(deep_link, wait_until="domcontentloaded")
+    wait_for_webclient(page)
     expect(page.locator(".o_monodoo_home")).to_have_count(0)
 
 
 def test_project_search_is_local(page: Page) -> None:
     open_neutral_home(page)
-    page.wait_for_load_state("networkidle")
     network_calls: list[str] = []
 
     def record_request(request) -> None:
