@@ -1,10 +1,10 @@
 # Monodoo Home Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Use TDD for every behavior change and verification-before-completion before any success claim.
 
 **Goal:** Build `monodoo_core` and `monodoo_home` for Odoo 19 Community so neutral `/odoo` opens a native application launcher while valid deep links, Odoo permissions, standard navigation, and fail-open behavior remain intact.
 
-**Architecture:** `monodoo_core` is a deliberately minimal generic base addon. `monodoo_home` registers a standard root `ir.ui.menu` bound to an Owl `ir.actions.client`, reads permitted applications from the existing Odoo menu service, and applies one isolated patch to `WebClient._loadDefaultApp()` so only the no-state fallback selects Home. The launcher never queries `ir.ui.menu` independently and never replaces `/odoo`, authentication, the navbar, or Odoo's ACL model.
+**Architecture:** `monodoo_core` is a deliberately minimal generic base addon. `monodoo_home` registers a standard root `ir.ui.menu` bound to an Owl `ir.actions.client`, reads permitted applications from Odoo's existing menu service, and applies one isolated patch to `WebClient._loadDefaultApp()` so only the no-state fallback selects Home. The launcher never queries `ir.ui.menu` independently and never replaces `/odoo`, authentication, the navbar, or Odoo's ACL model.
 
 **Tech Stack:** Odoo 19 Community, Python manifests/XML data, Owl, Odoo web registries/services, HOOT frontend tests, Docker/PostgreSQL runtime validation, Playwright browser acceptance tests, GitHub Actions.
 
@@ -15,24 +15,21 @@
 - Target runtime is Odoo 19 Community only.
 - Initial versions are exactly `19.0.1.0.0` for both `monodoo_core` and `monodoo_home`.
 - License is LGPL-3.
-- `monodoo_home` depends on `web` and `monodoo_core`; `monodoo_core` depends only on `base` in v1.
-- No FACODI dependency, naming, data model, URL, or behavior may appear in either addon.
+- `monodoo_core` depends only on `base` in v1.
+- `monodoo_home` depends exactly on `web` and `monodoo_core`.
+- No FACODI dependency, naming, data model, URL, or runtime behavior may appear in either addon.
 - Do not add compatibility abstractions for Odoo 17, 18, or 20.
 - Do not create a custom `/odoo` controller or redirect.
 - Do not patch or replace the standard navbar template.
-- Home must be a standard root `ir.ui.menu` available to `base.group_user` and bound to a standard `ir.actions.client`.
-- Business application cards come only from `menuService.getApps()` and must preserve Odoo order after filtering out Home itself.
-- Opening a card uses `menuService.selectMenu(app)`.
-- Search is local-only and must not trigger an RPC.
-- The default-home adapter must fail open to the original Odoo `_loadDefaultApp()` behavior.
-- A green install without browser/frontend verification is insufficient for release.
+- Home is a standard root `ir.ui.menu` available to `base.group_user` and bound to a standard `ir.actions.client`.
+- Business application cards come only from `menuService.getApps()` and preserve Odoo order after filtering out Home itself.
+- Opening an application uses `menuService.selectMenu(app)`.
+- Search is local-only and must not trigger an RPC/fetch request.
+- The default-home adapter must fail open to Odoo's original `_loadDefaultApp()` behavior.
+- A green install without frontend/browser evidence is insufficient for release.
 - `facodi-deploy` integration is a separate follow-up plan and must not begin until Monodoo is merged and independently green.
 
----
-
-## File Structure
-
-Create the following implementation shape. Each file has one responsibility.
+## Target File Structure
 
 ```text
 monodoo/
@@ -56,7 +53,9 @@ monodoo/
 │   │   ├── prepare_database.sh
 │   │   └── wait_http.py
 │   └── e2e/
-│       └── test_home.py
+│       ├── conftest.py
+│       ├── test_home.py
+│       └── test_hoot.py
 ├── monodoo_core/
 │   ├── __init__.py
 │   └── __manifest__.py
@@ -65,24 +64,52 @@ monodoo/
     ├── __manifest__.py
     ├── data/
     │   └── home_action.xml
-    ├── static/
-    │   ├── src/
-    │   │   ├── home/
-    │   │   │   ├── home.js
-    │   │   │   ├── home.xml
-    │   │   │   └── home.scss
-    │   │   └── webclient/
-    │   │       └── default_home.js
-    │   └── tests/
-    │       ├── home.test.js
-    │       └── default_home.test.js
+    └── static/
+        ├── src/
+        │   ├── home/
+        │   │   ├── constants.js
+        │   │   ├── home.js
+        │   │   ├── home.xml
+        │   │   └── home.scss
+        │   └── webclient/
+        │       └── default_home.js
+        └── tests/
+            ├── home.test.js
+            └── default_home.test.js
 ```
 
 No Python model package is created in v1 because neither addon needs a custom business model.
 
 ---
 
-### Task 1: Establish the repository contract and minimal Odoo addons
+### Task 0: Start implementation on an isolated branch
+
+**Files:** none.
+
+- [ ] **Step 1: Verify `main` still contains only approved planning artifacts**
+
+Run:
+
+```bash
+git fetch origin
+git checkout main
+git pull --ff-only origin main
+git status --short
+```
+
+Expected: clean working tree.
+
+- [ ] **Step 2: Create the implementation branch**
+
+```bash
+git checkout -b feat/community-home
+```
+
+All implementation commits from Tasks 1-6 stay on this branch until PR merge.
+
+---
+
+### Task 1: Establish the repository contract and minimal installable addons
 
 **Files:**
 - Create: `LICENSE`
@@ -94,13 +121,11 @@ No Python model package is created in v1 because neither addon needs a custom bu
 - Create: `monodoo_home/__init__.py`
 - Create: `monodoo_home/__manifest__.py`
 
-**Interfaces:**
-- Consumes: approved design in `docs/superpowers/specs/2026-09-05-monodoo-home-design.md`.
-- Produces: installable addon manifests with module names `monodoo_core` and `monodoo_home`; the latter declares backend and unit-test asset bundles used by later tasks.
+**Interfaces:** Produces two independently parseable Odoo 19 addon manifests. No XML/data/assets are declared yet, so this commit remains internally complete.
 
 - [ ] **Step 1: Write the failing repository contract test**
 
-Create `tests/test_repository_contract.py` with checks that parse manifests through `ast.literal_eval`, assert exact versions/license/dependencies, reject FACODI references in addon source, reject controller files, and ensure every declared local asset path exists.
+Create `tests/test_repository_contract.py`:
 
 ```python
 from __future__ import annotations
@@ -114,8 +139,9 @@ ADDONS = ("monodoo_core", "monodoo_home")
 
 
 def load_manifest(addon: str) -> dict:
-    path = ROOT / addon / "__manifest__.py"
-    return ast.literal_eval(path.read_text(encoding="utf-8"))
+    return ast.literal_eval(
+        (ROOT / addon / "__manifest__.py").read_text(encoding="utf-8")
+    )
 
 
 class RepositoryContractTest(unittest.TestCase):
@@ -124,12 +150,13 @@ class RepositoryContractTest(unittest.TestCase):
             self.assertTrue((ROOT / addon / "__manifest__.py").is_file())
             self.assertTrue((ROOT / addon / "__init__.py").is_file())
 
-    def test_versions_and_license(self):
+    def test_versions_license_and_installability(self):
         for addon in ADDONS:
             manifest = load_manifest(addon)
             self.assertEqual(manifest["version"], "19.0.1.0.0")
             self.assertEqual(manifest["license"], "LGPL-3")
             self.assertTrue(manifest["installable"])
+            self.assertFalse(manifest["application"])
 
     def test_dependency_boundary(self):
         self.assertEqual(load_manifest("monodoo_core")["depends"], ["base"])
@@ -142,46 +169,29 @@ class RepositoryContractTest(unittest.TestCase):
         for addon in ADDONS:
             for path in (ROOT / addon).rglob("*"):
                 if path.is_file() and path.suffix in {".py", ".js", ".xml", ".scss"}:
-                    self.assertNotIn("facodi", path.read_text(encoding="utf-8").lower())
+                    content = path.read_text(encoding="utf-8").lower()
+                    self.assertNotIn("facodi", content, str(path))
 
-    def test_no_http_controller(self):
+    def test_no_controller_package(self):
         for addon in ADDONS:
             self.assertFalse((ROOT / addon / "controllers").exists())
-
-    def test_home_assets_are_declared(self):
-        manifest = load_manifest("monodoo_home")
-        assets = manifest["assets"]
-        self.assertIn("web.assets_backend", assets)
-        self.assertIn("web.assets_unit_tests", assets)
-        backend = assets["web.assets_backend"]
-        self.assertIn("monodoo_home/static/src/home/**/*", backend)
-        self.assertIn(
-            "monodoo_home/static/src/webclient/default_home.js",
-            backend,
-        )
-        self.assertEqual(
-            assets["web.assets_unit_tests"],
-            ["monodoo_home/static/tests/**/*.test.js"],
-        )
 
 
 if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run the contract test and verify it fails**
-
-Run:
+- [ ] **Step 2: Run the test and verify RED**
 
 ```bash
 python3 -m unittest tests.test_repository_contract -v
 ```
 
-Expected: FAIL because `monodoo_core` and `monodoo_home` do not yet exist.
+Expected: FAIL because the addon directories/manifests do not exist.
 
-- [ ] **Step 3: Add the minimal addon manifests and LGPL-3 repository metadata**
+- [ ] **Step 3: Create minimal manifests**
 
-Create `monodoo_core/__manifest__.py`:
+`monodoo_core/__manifest__.py`:
 
 ```python
 {
@@ -196,7 +206,7 @@ Create `monodoo_core/__manifest__.py`:
 }
 ```
 
-Create `monodoo_home/__manifest__.py` initially with the final dependency and asset contract; the referenced files are added in Tasks 2 and 3, so the contract's file-existence expansion is added only when those tasks land.
+`monodoo_home/__manifest__.py`:
 
 ```python
 {
@@ -206,32 +216,16 @@ Create `monodoo_home/__manifest__.py` initially with the final dependency and as
     "category": "Productivity",
     "license": "LGPL-3",
     "depends": ["web", "monodoo_core"],
-    "data": ["data/home_action.xml"],
-    "assets": {
-        "web.assets_backend": [
-            "monodoo_home/static/src/home/**/*",
-            "monodoo_home/static/src/webclient/default_home.js",
-        ],
-        "web.assets_unit_tests": [
-            "monodoo_home/static/tests/**/*.test.js",
-        ],
-    },
     "installable": True,
     "application": False,
 }
 ```
 
-Both `__init__.py` files remain empty except for a short module docstring; do not create unused model imports.
+Both `__init__.py` files are empty. Do not add unused models/hooks.
 
-`README.md` must state: Odoo 19 Community, LGPL-3, current modules, install order, and that FACODI integration lives outside this repository.
+Add the standard LGPL-3 text to `LICENSE`. `README.md` states Odoo 19 Community support, LGPL-3, the two modules, and explicitly says FACODI deployment integration belongs to its deployment repository.
 
-- [ ] **Step 4: Adjust the contract test so Task 1 validates only files Task 1 owns**
-
-Do not weaken dependency/version checks. Delay only XML/asset path existence checks until Tasks 2 and 3; keep the asset bundle declaration assertions above.
-
-- [ ] **Step 5: Run the repository contract test**
-
-Run:
+- [ ] **Step 4: Run the contract test and verify GREEN**
 
 ```bash
 python3 -m unittest tests.test_repository_contract -v
@@ -239,116 +233,74 @@ python3 -m unittest tests.test_repository_contract -v
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit Task 1**
+- [ ] **Step 5: Commit Task 1**
 
 ```bash
 git add LICENSE README.md tests monodoo_core monodoo_home
- git commit -m "feat: establish Monodoo addon foundation"
+git commit -m "feat: establish Monodoo addon foundation"
 ```
 
 ---
 
-### Task 2: Implement the standard Home client action and application launcher
+### Task 2: Implement the standard Home action, root menu, and launcher
 
 **Files:**
 - Create: `monodoo_home/data/home_action.xml`
+- Create: `monodoo_home/static/src/home/constants.js`
 - Create: `monodoo_home/static/src/home/home.js`
 - Create: `monodoo_home/static/src/home/home.xml`
 - Create: `monodoo_home/static/src/home/home.scss`
 - Create: `monodoo_home/static/tests/home.test.js`
+- Modify: `monodoo_home/__manifest__.py`
 - Modify: `tests/test_repository_contract.py`
 
 **Interfaces:**
-- Consumes: Odoo `menu` service methods `getApps()` and `selectMenu(menu)`.
-- Produces: action registry tag `monodoo_home`; XML IDs `monodoo_home.action_monodoo_home` and `monodoo_home.menu_monodoo_home`; constant `MONODOO_HOME_MENU_XMLID = "monodoo_home.menu_monodoo_home"`; Owl class `MonodooHome`.
+- Action registry tag: `monodoo_home`.
+- XML IDs: `monodoo_home.action_monodoo_home`, `monodoo_home.menu_monodoo_home`.
+- Shared constant: `MONODOO_HOME_MENU_XMLID`.
+- App source: `menuService.getApps()`.
+- App navigation: `menuService.selectMenu(app)`.
 
-- [ ] **Step 1: Write the failing HOOT tests for launcher behavior**
+- [ ] **Step 1: Extend the repository contract first and verify RED**
 
-Create `monodoo_home/static/tests/home.test.js` using Odoo 19's own `defineMenus`, `defineActions`, `mountWithCleanup`, `contains`, `getService`, and `useTestClientAction` helpers. The first tests must prove:
+Add tests that require:
 
-```javascript
-import { expect, test } from "@odoo/hoot";
-import { animationFrame } from "@odoo/hoot-mock";
-import {
-    contains,
-    defineActions,
-    defineMenus,
-    getService,
-    mountWithCleanup,
-    useTestClientAction,
-} from "@web/../tests/web_test_helpers";
+```python
+import xml.etree.ElementTree as ET
 
-import { MonodooHome } from "@monodoo_home/home/home";
 
-const testAction = useTestClientAction();
-defineActions([
-    { ...testAction, id: 1000, params: { description: "Home" } },
-    { ...testAction, id: 1001, params: { description: "CRM" } },
-    { ...testAction, id: 1002, params: { description: "Project" } },
-]);
-defineMenus([
-    {
-        id: 10,
-        name: "Home",
-        actionID: 1000,
-        xmlid: "monodoo_home.menu_monodoo_home",
-    },
-    {
-        id: 20,
-        name: "CRM",
-        actionID: 1001,
-        xmlid: "crm.crm_menu_root",
-        webIconData: "data:image/png;base64,AA==",
-    },
-    {
-        id: 30,
-        name: "Project",
-        actionID: 1002,
-        xmlid: "project.menu_main_pm",
-        webIconData: undefined,
-    },
-]);
+def test_home_manifest_declares_action_and_home_assets(self):
+    manifest = load_manifest("monodoo_home")
+    self.assertEqual(manifest["data"], ["data/home_action.xml"])
+    self.assertEqual(
+        manifest["assets"]["web.assets_backend"],
+        ["monodoo_home/static/src/home/**/*"],
+    )
+    self.assertEqual(
+        manifest["assets"]["web.assets_unit_tests"],
+        ["monodoo_home/static/tests/**/*.test.js"],
+    )
 
-test("renders permitted apps in Odoo order and excludes Home", async () => {
-    await mountWithCleanup(MonodooHome);
-    expect(".o_monodoo_app_card").toHaveCount(2);
-    expect(".o_monodoo_app_name").toHaveText("CRM\nProject");
-    expect(".o_monodoo_home .o_app_icon").toHaveCount(1);
-    expect(".o_monodoo_app_fallback_icon").toHaveCount(1);
-});
 
-test("filters locally by application name", async () => {
-    await mountWithCleanup(MonodooHome);
-    await contains(".o_monodoo_search").edit("pro", { confirm: false });
-    await animationFrame();
-    expect(".o_monodoo_app_card").toHaveCount(1);
-    expect(".o_monodoo_app_name").toHaveText("Project");
-});
-
-test("opens an app through the menu service", async () => {
-    await mountWithCleanup(MonodooHome);
-    await contains(".o_monodoo_app_card").click();
-    await animationFrame();
-    expect(getService("menu").getCurrentApp().name).toBe("CRM");
-});
+def test_home_xml_exists_and_parses(self):
+    path = ROOT / "monodoo_home/data/home_action.xml"
+    ET.parse(path)
+    content = path.read_text(encoding="utf-8")
+    self.assertIn('id="action_monodoo_home"', content)
+    self.assertIn('id="menu_monodoo_home"', content)
 ```
 
-Add one test that patches `getApps()` to return only Home and asserts `.o_monodoo_empty` exists, and one test that instruments network calls around editing `.o_monodoo_search` and asserts no new call occurred after typing.
-
-- [ ] **Step 2: Run only the Monodoo Home frontend tests and verify they fail**
-
-Run Odoo's HOOT suite with the module filter once the runtime helper from Task 4 exists. During this task, a local Odoo checkout may be used directly:
+Run:
 
 ```bash
-./odoo-bin -d monodoo_test --addons-path=addons,/path/to/monodoo \
-  --test-enable --stop-after-init -i monodoo_home
+python3 -m unittest tests.test_repository_contract -v
 ```
 
-Then open/run the Odoo unit-test bundle filtered to `monodoo_home`. Expected: tests fail because the component/action do not exist yet.
+Expected: FAIL because Task 2 files/declarations do not exist.
 
-- [ ] **Step 3: Create the standard `ir.actions.client` and root `ir.ui.menu`**
+- [ ] **Step 2: Create the standard client action and root menu**
 
-Create `monodoo_home/data/home_action.xml`:
+`monodoo_home/data/home_action.xml`:
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -368,18 +320,99 @@ Create `monodoo_home/data/home_action.xml`:
 </odoo>
 ```
 
-Do not add a parent menu and do not add a custom navbar view.
+No parent menu. No navbar view inheritance.
 
-- [ ] **Step 4: Implement the Owl component with no server-side menu query**
+- [ ] **Step 3: Add deterministic shared constant and failing HOOT tests**
 
-Create `monodoo_home/static/src/home/home.js`:
+`monodoo_home/static/src/home/constants.js`:
+
+```javascript
+export const MONODOO_HOME_MENU_XMLID = "monodoo_home.menu_monodoo_home";
+```
+
+Create `monodoo_home/static/tests/home.test.js` using Odoo 19 `defineMenus`, `defineActions`, `mountWithCleanup`, `contains`, `getService`, `useTestClientAction`, and `queryAllTexts`.
+
+The core assertions are:
+
+```javascript
+import { expect, test } from "@odoo/hoot";
+import { queryAllTexts } from "@odoo/hoot-dom";
+import { animationFrame } from "@odoo/hoot-mock";
+import {
+    contains,
+    defineActions,
+    defineMenus,
+    getService,
+    mountWithCleanup,
+    useTestClientAction,
+} from "@web/../tests/web_test_helpers";
+
+import { MonodooHome } from "@monodoo_home/home/home";
+
+const testAction = useTestClientAction();
+defineActions([
+    { ...testAction, id: 1000, params: { description: "Home" } },
+    { ...testAction, id: 1001, params: { description: "CRM" } },
+    { ...testAction, id: 1002, params: { description: "Project" } },
+]);
+defineMenus([
+    { id: 10, name: "Home", actionID: 1000, xmlid: "monodoo_home.menu_monodoo_home" },
+    {
+        id: 20,
+        name: "CRM",
+        actionID: 1001,
+        xmlid: "crm.crm_menu_root",
+        webIconData: "data:image/png;base64,AA==",
+    },
+    {
+        id: 30,
+        name: "Project",
+        actionID: 1002,
+        xmlid: "project.menu_main_pm",
+        webIconData: undefined,
+    },
+]);
+
+test("renders Odoo apps in order and excludes Home", async () => {
+    await mountWithCleanup(MonodooHome);
+    expect(".o_monodoo_app_card").toHaveCount(2);
+    expect(queryAllTexts(".o_monodoo_app_name")).toEqual(["CRM", "Project"]);
+    expect(".o_monodoo_home .o_app_icon").toHaveCount(1);
+    expect(".o_monodoo_app_fallback_icon").toHaveCount(1);
+});
+
+test("filters locally by app name", async () => {
+    await mountWithCleanup(MonodooHome);
+    await contains(".o_monodoo_search").edit("pro", { confirm: false });
+    await animationFrame();
+    expect(queryAllTexts(".o_monodoo_app_name")).toEqual(["Project"]);
+});
+
+test("opens app through menu service", async () => {
+    await mountWithCleanup(MonodooHome);
+    await contains(".o_monodoo_app_card").click();
+    await animationFrame();
+    expect(getService("menu").getCurrentApp().name).toBe("CRM");
+});
+```
+
+Also test:
+- only Home returned -> `.o_monodoo_empty` exists;
+- no app icon -> neutral fallback icon;
+- search does not call `rpc`/fetch after mount.
+
+At this point the test file may not execute until the runtime exists, but the production component is still implemented only after the test behavior is written.
+
+- [ ] **Step 4: Implement the Owl component**
+
+`home.js`:
 
 ```javascript
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
 import { Component, useState } from "@odoo/owl";
 
-export const MONODOO_HOME_MENU_XMLID = "monodoo_home.menu_monodoo_home";
+import { MONODOO_HOME_MENU_XMLID } from "./constants";
 
 export class MonodooHome extends Component {
     static template = "monodoo_home.Home";
@@ -395,12 +428,9 @@ export class MonodooHome extends Component {
         const apps = this.menuService
             .getApps()
             .filter((app) => app.xmlid !== MONODOO_HOME_MENU_XMLID);
-        if (!query) {
-            return apps;
-        }
-        return apps.filter((app) =>
-            (app.name || "").toLocaleLowerCase().includes(query)
-        );
+        return query
+            ? apps.filter((app) => (app.name || "").toLocaleLowerCase().includes(query))
+            : apps;
     }
 
     openApp(app) {
@@ -411,7 +441,7 @@ export class MonodooHome extends Component {
 registry.category("actions").add("monodoo_home", MonodooHome);
 ```
 
-Create `home.xml` with exactly one search input, an ordered card grid, Odoo-provided image data where present, a neutral `oi oi-apps` fallback where absent, and a neutral empty state. Keep all visible strings translatable through the Owl/QWeb template.
+`home.xml`:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -419,7 +449,7 @@ Create `home.xml` with exactly one search input, an ordered card grid, Odoo-prov
     <t t-name="monodoo_home.Home">
         <div class="o_monodoo_home h-100 overflow-auto bg-view">
             <div class="container py-4 py-lg-5">
-                <div class="mx-auto" style="max-width: 1100px;">
+                <div class="mx-auto o_monodoo_home_inner">
                     <h1 class="h3 mb-4">Applications</h1>
                     <input
                         class="o_monodoo_search form-control mb-4"
@@ -462,119 +492,124 @@ Create `home.xml` with exactly one search input, an ordered card grid, Odoo-prov
 </templates>
 ```
 
-`home.scss` may size `.o_app_icon` to `3rem` and keep cards keyboard-visible, but must not define a Monodoo color palette or replace Odoo CSS variables.
+`home.scss`:
 
-- [ ] **Step 5: Strengthen the repository contract for the new files**
+```scss
+.o_monodoo_home_inner {
+    max-width: 1100px;
+}
 
-Add assertions that:
+.o_monodoo_app_card {
+    min-height: 7rem;
 
-- `data/home_action.xml` parses.
-- it contains `action_monodoo_home` and `menu_monodoo_home`.
-- no XML file contains a route/controller declaration.
-- every static path referenced by the manifest exists.
+    .o_app_icon {
+        width: 3rem;
+        height: 3rem;
+        object-fit: contain;
+    }
+}
+```
 
-- [ ] **Step 6: Run contract + frontend tests**
+Do not define a Monodoo color palette.
 
-Expected: all Task 1/2 tests pass.
+- [ ] **Step 5: Update the manifest only with files that now exist**
+
+Add:
+
+```python
+"data": ["data/home_action.xml"],
+"assets": {
+    "web.assets_backend": ["monodoo_home/static/src/home/**/*"],
+    "web.assets_unit_tests": ["monodoo_home/static/tests/**/*.test.js"],
+},
+```
+
+- [ ] **Step 6: Run repository contract tests**
+
+```bash
+python3 -m unittest tests.test_repository_contract -v
+```
+
+Expected: PASS.
 
 - [ ] **Step 7: Commit Task 2**
 
 ```bash
-git add monodoo_home/data monodoo_home/static/src/home monodoo_home/static/tests/home.test.js tests/test_repository_contract.py
- git commit -m "feat: add Community application launcher"
+git add monodoo_home tests/test_repository_contract.py
+git commit -m "feat: add Community application launcher"
 ```
 
 ---
 
-### Task 3: Implement automatic neutral `/odoo` Home with fail-open fallback
+### Task 3: Make neutral `/odoo` select Home with fail-open fallback
 
 **Files:**
 - Create: `monodoo_home/static/src/webclient/default_home.js`
 - Create: `monodoo_home/static/tests/default_home.test.js`
+- Modify: `monodoo_home/__manifest__.py`
 - Modify: `tests/test_repository_contract.py`
 
-**Interfaces:**
-- Consumes: `MONODOO_HOME_MENU_XMLID`, Odoo 19 `WebClient.prototype._loadDefaultApp()`, and `menuService.getApps()/selectMenu()`.
-- Produces: exported helper `loadMonodooDefaultApp(menuService, fallback)` and one isolated `patch(WebClient.prototype, {...})`.
+**Interfaces:** Consumes `MONODOO_HOME_MENU_XMLID`, `WebClient.prototype._loadDefaultApp()`, `menuService.getApps()`, and `menuService.selectMenu()`.
 
-- [ ] **Step 1: Write failing tests for Home selection and fallback behavior**
+- [ ] **Step 1: Write failing helper tests**
 
-Create `default_home.test.js` and test the helper directly with stub services before testing it through `WebClient`.
+`default_home.test.js`:
 
 ```javascript
 import { expect, test } from "@odoo/hoot";
 
-import {
-    loadMonodooDefaultApp,
-    MONODOO_HOME_MENU_XMLID,
-} from "@monodoo_home/webclient/default_home";
+import { MONODOO_HOME_MENU_XMLID } from "@monodoo_home/home/constants";
+import { loadMonodooDefaultApp } from "@monodoo_home/webclient/default_home";
 
-test("selects the Monodoo Home root menu", async () => {
+test("selects Monodoo Home when available", async () => {
     const home = { id: 10, xmlid: MONODOO_HOME_MENU_XMLID };
     let selected;
     let fallbackCalled = false;
     await loadMonodooDefaultApp(
         {
             getApps: () => [home, { id: 20, xmlid: "crm.crm_menu_root" }],
-            selectMenu: async (menu) => {
-                selected = menu;
-            },
+            selectMenu: async (menu) => { selected = menu; },
         },
-        async () => {
-            fallbackCalled = true;
-        }
+        async () => { fallbackCalled = true; }
     );
     expect(selected).toBe(home);
     expect(fallbackCalled).toBe(false);
 });
 
-test("falls back when Home is missing", async () => {
+test("uses Odoo fallback when Home is missing", async () => {
     let fallbackCalled = false;
     await loadMonodooDefaultApp(
-        {
-            getApps: () => [{ id: 20, xmlid: "crm.crm_menu_root" }],
-            selectMenu: async () => {},
-        },
-        async () => {
-            fallbackCalled = true;
-        }
+        { getApps: () => [{ id: 20, xmlid: "crm.crm_menu_root" }], selectMenu: async () => {} },
+        async () => { fallbackCalled = true; }
     );
     expect(fallbackCalled).toBe(true);
 });
 
-test("falls back when selecting Home fails", async () => {
+test("uses Odoo fallback when Home selection fails", async () => {
     const home = { id: 10, xmlid: MONODOO_HOME_MENU_XMLID };
     let fallbackCalled = false;
     await loadMonodooDefaultApp(
         {
             getApps: () => [home],
-            selectMenu: async () => {
-                throw new Error("selection failed");
-            },
+            selectMenu: async () => { throw new Error("selection failed"); },
         },
-        async () => {
-            fallbackCalled = true;
-        }
+        async () => { fallbackCalled = true; }
     );
     expect(fallbackCalled).toBe(true);
 });
 ```
 
-Add a WebClient-level test using `defineMenus()` and `mountWithCleanup(WebClient)` to prove that a no-state startup renders `.o_monodoo_home` rather than the first business app.
+Add an Odoo `WebClient` test with `defineMenus()` + `mountWithCleanup(WebClient)` showing that no-state startup renders `.o_monodoo_home` instead of the first business app.
 
-- [ ] **Step 2: Run the tests and verify they fail because the adapter does not exist**
+- [ ] **Step 2: Implement one isolated WebClient patch**
 
-Expected: module import failure for `@monodoo_home/webclient/default_home`.
-
-- [ ] **Step 3: Implement the helper and the single WebClient patch**
-
-Create `default_home.js`:
+`default_home.js`:
 
 ```javascript
 import { patch } from "@web/core/utils/patch";
 import { WebClient } from "@web/webclient/webclient";
 
-export const MONODOO_HOME_MENU_XMLID = "monodoo_home.menu_monodoo_home";
+import { MONODOO_HOME_MENU_XMLID } from "@monodoo_home/home/constants";
 
 export async function loadMonodooDefaultApp(menuService, fallback) {
     const homeMenu = menuService
@@ -601,53 +636,54 @@ patch(WebClient.prototype, {
 });
 ```
 
-Do not patch `loadRouterState()`: valid state/deep-link handling must remain entirely Odoo-owned. Do not catch errors outside the Home-selection attempt.
+Do not patch `loadRouterState()`. That is what preserves valid deep links and restored state.
 
-- [ ] **Step 4: Remove the duplicate XML-ID constant from `home.js`**
+- [ ] **Step 3: Add the patch file to backend assets**
 
-Import the shared constant from `default_home.js` or, preferably, extract the constant into `static/src/home/constants.js` only if doing so removes a real circular dependency. If `home.js -> default_home.js` causes the WebClient patch to load as a side effect when testing the component, create `static/src/home/constants.js` with only:
+Final backend asset list becomes:
 
-```javascript
-export const MONODOO_HOME_MENU_XMLID = "monodoo_home.menu_monodoo_home";
+```python
+"web.assets_backend": [
+    "monodoo_home/static/src/home/**/*",
+    "monodoo_home/static/src/webclient/default_home.js",
+],
 ```
 
-Then import that constant from both files. This is the only additional file permitted for this concern.
+- [ ] **Step 4: Strengthen static contract checks**
 
-- [ ] **Step 5: Add static contract checks for the patch boundary**
+Add tests that assert exactly one `patch(WebClient.prototype` occurrence under `monodoo_home`, no `patch(NavBar`, no `t-inherit="web.NavBar"`, and no `controllers/` directory.
 
-The repository contract must assert:
-
-- there is exactly one `patch(WebClient.prototype` occurrence under `monodoo_home`;
-- no source file contains `patch(NavBar` or `t-inherit="web.NavBar"`;
-- no source file declares `/odoo` as a controller route.
-
-- [ ] **Step 6: Run all repository and HOOT tests**
-
-Expected: PASS, including fail-open tests.
-
-- [ ] **Step 7: Commit Task 3**
+- [ ] **Step 5: Run repository contract tests**
 
 ```bash
-git add monodoo_home/static/src monodoo_home/static/tests/default_home.test.js tests/test_repository_contract.py
- git commit -m "feat: open Monodoo Home on neutral backend entry"
+python3 -m unittest tests.test_repository_contract -v
+```
+
+Expected: PASS.
+
+- [ ] **Step 6: Commit Task 3**
+
+```bash
+git add monodoo_home tests/test_repository_contract.py
+git commit -m "feat: open Monodoo Home on neutral backend entry"
 ```
 
 ---
 
-### Task 4: Add a real Odoo 19 Community runtime harness and browser acceptance tests
+### Task 4: Add a real Odoo 19 runtime, HOOT gate, and browser acceptance suite
 
 **Files:**
 - Create: `tests/requirements.txt`
 - Create: `tests/runtime/docker-compose.yml`
 - Create: `tests/runtime/prepare_database.sh`
 - Create: `tests/runtime/wait_http.py`
+- Create: `tests/e2e/conftest.py`
 - Create: `tests/e2e/test_home.py`
+- Create: `tests/e2e/test_hoot.py`
 
-**Interfaces:**
-- Consumes: official `odoo:19.0` image, PostgreSQL 16, installed `monodoo_core`, `monodoo_home`, `crm`, and `project` Community modules.
-- Produces: repeatable local command that validates clean install, upgrade, browser startup, neutral Home, app navigation, deep-link preservation, restricted-user filtering, desktop apps menu, and mobile app navigation.
+**Interfaces:** Uses official `odoo:19.0`, `postgres:16`, `crm`, and `project` only as test fixtures around the two Monodoo addons.
 
-- [ ] **Step 1: Create the test Python dependency lock surface**
+- [ ] **Step 1: Pin browser-test dependencies**
 
 `tests/requirements.txt`:
 
@@ -656,9 +692,9 @@ playwright==1.55.0
 pytest==8.4.2
 ```
 
-If either exact pin is unavailable in the execution environment, choose the newest patch release available for that same major/minor and commit the resolved pin; do not leave an unpinned dependency.
+If the package index used by CI cannot resolve one of these exact versions, update this file to the nearest available patch release in the same major/minor before committing; never leave an unpinned range.
 
-- [ ] **Step 2: Create Docker Compose for PostgreSQL and Odoo 19**
+- [ ] **Step 2: Create Docker Compose**
 
 `tests/runtime/docker-compose.yml`:
 
@@ -697,48 +733,147 @@ services:
       - --max-cron-threads=0
 ```
 
-- [ ] **Step 3: Write a deterministic database preparation script**
+- [ ] **Step 3: Create deterministic HTTP wait helper**
 
-`prepare_database.sh` must:
-
-1. `docker compose down -v --remove-orphans`.
-2. start `db` and wait healthy.
-3. run one-shot Odoo init with `-i monodoo_core,monodoo_home,crm,project --stop-after-init`.
-4. use Odoo shell to set the admin password to `admin`.
-5. create an internal restricted user `project.user@example.test` with `base.group_user` and `project.group_project_user`, but without CRM sales groups.
-6. run `-u monodoo_core,monodoo_home --stop-after-init` to prove upgrade safety.
-7. start the persistent `odoo` service.
-8. call `wait_http.py http://127.0.0.1:8069/web/login 90`.
-
-Every command uses `set -euo pipefail`; failures stop the script.
-
-- [ ] **Step 4: Write `wait_http.py`**
-
-Use only Python stdlib (`urllib.request`, `time`, `sys`). It exits 0 only after an HTTP response below 500 and exits 1 after the supplied timeout, printing the last exception.
-
-- [ ] **Step 5: Write Playwright tests first and verify they fail before running the server with the feature**
-
-`tests/e2e/test_home.py` must provide a login helper and these tests:
+`tests/runtime/wait_http.py`:
 
 ```python
-from playwright.sync_api import Page, expect
+#!/usr/bin/env python3
+from __future__ import annotations
+
+from urllib.error import HTTPError, URLError
+from urllib.request import urlopen
+import sys
+import time
+
+url = sys.argv[1]
+timeout = float(sys.argv[2])
+deadline = time.monotonic() + timeout
+last_error: Exception | None = None
+
+while time.monotonic() < deadline:
+    try:
+        with urlopen(url, timeout=3) as response:
+            if response.status < 500:
+                raise SystemExit(0)
+    except (HTTPError, URLError, TimeoutError) as error:
+        last_error = error
+    time.sleep(1)
+
+print(f"Timed out waiting for {url}: {last_error}", file=sys.stderr)
+raise SystemExit(1)
+```
+
+- [ ] **Step 4: Create deterministic database preparation script**
+
+`tests/runtime/prepare_database.sh`:
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$HERE"
+
+docker compose down -v --remove-orphans
+docker compose up -d db
+
+# Fresh install proves addon data/assets can be registered on a clean Odoo 19 DB.
+docker compose run --rm odoo \
+  --database=monodoo_test \
+  --stop-after-init \
+  --without-demo=all \
+  -i monodoo_core,monodoo_home,crm,project
+
+# Deterministic credentials and a restricted internal test user.
+cat <<'PY' | docker compose run --rm -T odoo shell -d monodoo_test
+admin = env.ref("base.user_admin")
+admin.password = "admin"
+internal_group = env.ref("base.group_user")
+project_group = env.ref("project.group_project_user")
+login = "project.user@example.test"
+user = env["res.users"].search([("login", "=", login)], limit=1)
+vals = {
+    "name": "Project User",
+    "login": login,
+    "password": "project",
+    "groups_id": [(6, 0, [internal_group.id, project_group.id])],
+}
+if user:
+    user.write(vals)
+else:
+    env["res.users"].create(vals)
+env.cr.commit()
+PY
+
+# Upgrade must also succeed before browser tests are allowed to run.
+docker compose run --rm odoo \
+  --database=monodoo_test \
+  --stop-after-init \
+  --without-demo=all \
+  -u monodoo_core,monodoo_home
+
+docker compose up -d odoo
+python3 wait_http.py http://127.0.0.1:8069/web/login 90
+```
+
+If Odoo 19's exact user-group write API differs in the official runtime, diagnose the real field/API and update this script to the Odoo 19-supported equivalent; do not broaden the user's groups merely to make the test pass.
+
+- [ ] **Step 5: Create shared Playwright fixtures**
+
+`tests/e2e/conftest.py`:
+
+```python
+from __future__ import annotations
+
+import pytest
+from playwright.sync_api import Browser, Page, sync_playwright
 
 BASE_URL = "http://127.0.0.1:8069"
 
 
-def login(page: Page, login: str, password: str) -> None:
+@pytest.fixture(scope="session")
+def browser():
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(headless=True)
+        yield browser
+        browser.close()
+
+
+@pytest.fixture
+def page(browser: Browser):
+    context = browser.new_context()
+    page = context.new_page()
+    page_errors: list[str] = []
+    page.on("pageerror", lambda error: page_errors.append(str(error)))
+    yield page
+    assert not page_errors, "Browser page errors: " + " | ".join(page_errors)
+    context.close()
+
+
+def login(page: Page, login_name: str, password: str) -> None:
     page.goto(f"{BASE_URL}/web/login")
-    page.locator("input[name='login']").fill(login)
+    page.locator("input[name='login']").fill(login_name)
     page.locator("input[name='password']").fill(password)
     page.locator("button[type='submit']").click()
     page.wait_for_load_state("networkidle")
+```
+
+- [ ] **Step 6: Write browser acceptance tests**
+
+`tests/e2e/test_home.py` covers five concrete flows:
+
+```python
+from playwright.sync_api import expect
+
+from .conftest import BASE_URL, login
 
 
-def test_neutral_odoo_opens_home_and_preserves_deep_link(page: Page):
+def test_neutral_odoo_opens_home_and_deep_link_survives(page):
     login(page, "admin", "admin")
     page.goto(f"{BASE_URL}/odoo")
     expect(page.locator(".o_monodoo_home")).to_be_visible()
-    expect(page.locator(".o_monodoo_app_card")).to_have_count_greater_than(1)
+    assert page.locator(".o_monodoo_app_card").count() > 1
 
     page.locator(".o_monodoo_app_card", has_text="CRM").click()
     expect(page.locator(".o_monodoo_home")).to_have_count(0)
@@ -748,19 +883,87 @@ def test_neutral_odoo_opens_home_and_preserves_deep_link(page: Page):
     page.goto(deep_link)
     page.wait_for_load_state("networkidle")
     expect(page.locator(".o_monodoo_home")).to_have_count(0)
+
+
+def test_search_is_local(page):
+    login(page, "admin", "admin")
+    page.goto(f"{BASE_URL}/odoo")
+    page.wait_for_load_state("networkidle")
+    network_calls: list[str] = []
+    page.on(
+        "request",
+        lambda request: network_calls.append(request.url)
+        if request.resource_type in {"xhr", "fetch"}
+        else None,
+    )
+    before = len(network_calls)
+    page.locator(".o_monodoo_search").fill("Project")
+    page.wait_for_timeout(250)
+    assert len(network_calls) == before
+    assert page.locator(".o_monodoo_app_card").count() == 1
+    expect(page.locator(".o_monodoo_app_card")).to_contain_text("Project")
+
+
+def test_standard_desktop_apps_menu_contains_home_and_returns_to_home(page):
+    login(page, "admin", "admin")
+    page.goto(f"{BASE_URL}/odoo")
+    page.locator(".o_monodoo_app_card", has_text="CRM").click()
+    page.locator(".o_navbar_apps_menu button[title='Home Menu']").click()
+    expect(page.locator(".o_navbar_apps_menu .o_app", has_text="Home")).to_be_visible()
+    page.locator(".o_navbar_apps_menu .o_app", has_text="Home").click()
+    expect(page.locator(".o_monodoo_home")).to_be_visible()
+
+
+def test_restricted_internal_user_sees_project_not_crm(page):
+    login(page, "project.user@example.test", "project")
+    page.goto(f"{BASE_URL}/odoo")
+    expect(page.locator(".o_monodoo_app_card", has_text="Project")).to_be_visible()
+    expect(page.locator(".o_monodoo_app_card", has_text="CRM")).to_have_count(0)
+
+
+def test_mobile_standard_apps_navigation_exposes_home(page):
+    page.set_viewport_size({"width": 390, "height": 844})
+    login(page, "admin", "admin")
+    page.goto(f"{BASE_URL}/odoo")
+    page.locator(".o_monodoo_app_card", has_text="CRM").click()
+    page.locator("a.o_menu_toggle").click()
+    page.locator(".o_sidebar_topbar a.btn-primary").click()
+    expect(page.locator(".o_app_menu_sidebar li.o_app", has_text="Home")).to_be_visible()
+    page.locator(".o_app_menu_sidebar li.o_app", has_text="Home").click()
+    expect(page.locator(".o_monodoo_home")).to_be_visible()
 ```
 
-Use normal Playwright count/assert patterns supported by the pinned version; if `to_have_count_greater_than` is unavailable, replace it with `assert locator.count() > 1` rather than weakening the assertion.
+If a selector differs in the exact Odoo 19 runtime, update only the selector to the verified standard DOM. Do not alter the behavioral assertion.
 
-Additional tests must assert:
+- [ ] **Step 7: Add a HOOT execution gate using Odoo's own test page**
 
-- Home is present in the standard desktop Apps dropdown.
-- selecting Home from that dropdown returns to `.o_monodoo_home`.
-- searching `Project` reduces the launcher to Project and produces no network request after the initial page load; collect requests before typing and assert the request count does not increase.
-- `project.user@example.test` sees Project but does not see CRM.
-- at mobile viewport `390x844`, the standard apps sidebar opens and contains Home; selecting it reaches `.o_monodoo_home`.
+Odoo 19's `web` controller serves `/web/tests`, and its own `WebSuite.test_unit_desktop` runs `/web/tests?headless&loglevel=2&preset=desktop&timeout=15000` and waits for the console success signal `[HOOT] Test suite succeeded`.
 
-- [ ] **Step 6: Run the full local acceptance harness**
+Create `tests/e2e/test_hoot.py`:
+
+```python
+from .conftest import BASE_URL, login
+
+
+def test_hoot_suite_succeeds(page):
+    login(page, "admin", "admin")
+    messages: list[str] = []
+    page.on("console", lambda message: messages.append(message.text))
+    page.goto(
+        f"{BASE_URL}/web/tests?headless&loglevel=2&preset=desktop&timeout=15000",
+        wait_until="domcontentloaded",
+    )
+    page.wait_for_function(
+        """() => [...document.querySelectorAll('*')]
+            .some((node) => node.textContent?.includes('[HOOT] Test suite succeeded'))""",
+        timeout=3600000,
+    )
+    assert not any("[HOOT]" in message and "failed" in message.lower() for message in messages)
+```
+
+Before accepting this test implementation, inspect the exact Odoo 19 test page once. If the success signal exists only in console and not DOM, replace the `wait_for_function` with a Playwright `expect_console_message`/event-backed wait for the exact `[HOOT] Test suite succeeded` signal. The success criterion itself is fixed and comes from Odoo 19's own `WebSuite`.
+
+- [ ] **Step 8: Run the full local runtime**
 
 ```bash
 python3 -m venv .venv-test
@@ -768,36 +971,35 @@ python3 -m venv .venv-test
 pip install -r tests/requirements.txt
 python -m playwright install chromium
 cd tests/runtime
+chmod +x prepare_database.sh wait_http.py
 ./prepare_database.sh
 cd ../..
 pytest tests/e2e -q
 ```
 
-Expected: all tests pass and no JS/Owl console error appears. Configure the Playwright context/test fixture to fail the test on uncaught `pageerror`; collect console errors and fail on errors originating from `monodoo_home`.
+Expected: fresh install succeeds, upgrade succeeds, HOOT succeeds, all browser acceptance tests pass, and no uncaught browser errors occur.
 
-- [ ] **Step 7: Tear down the runtime and commit**
+- [ ] **Step 9: Tear down and commit Task 4**
 
 ```bash
-cd tests/runtime && docker compose down -v --remove-orphans && cd ../..
+cd tests/runtime
+docker compose down -v --remove-orphans
+cd ../..
 git add tests
- git commit -m "test: add Odoo 19 runtime acceptance harness"
+git commit -m "test: add Odoo 19 runtime acceptance harness"
 ```
 
 ---
 
-### Task 5: Add GitHub Actions CI with contract, frontend, install/upgrade, and browser gates
+### Task 5: Add GitHub Actions release gates
 
 **Files:**
 - Create: `.github/workflows/ci.yml`
 - Modify: `README.md`
 
-**Interfaces:**
-- Consumes: Tasks 1-4 test commands.
-- Produces: required CI evidence for the Monodoo release; no deployment mutation.
+- [ ] **Step 1: Create separate contract and runtime jobs**
 
-- [ ] **Step 1: Create a CI workflow with separate readable jobs**
-
-The workflow triggers on `push` and `pull_request` and contains at least:
+`.github/workflows/ci.yml`:
 
 ```yaml
 name: CI
@@ -825,6 +1027,7 @@ jobs:
           python-version: "3.12"
       - run: pip install -r tests/requirements.txt
       - run: python -m playwright install --with-deps chromium
+      - run: chmod +x tests/runtime/prepare_database.sh tests/runtime/wait_http.py
       - run: tests/runtime/prepare_database.sh
       - run: pytest tests/e2e -q
       - if: always()
@@ -833,48 +1036,11 @@ jobs:
         run: cd tests/runtime && docker compose down -v --remove-orphans
 ```
 
-If HOOT tests need a separate invocation not covered by the browser runtime, add a third `odoo-unit-tests` job rather than hiding them inside the E2E job. That job must run only `monodoo_home/static/tests/**/*.test.js` through Odoo 19's `web.assets_unit_tests` test runner and fail on any HOOT failure.
+Do not remove the HOOT browser gate from `pytest tests/e2e`; it is part of runtime acceptance.
 
-- [ ] **Step 2: Make CI run the clean-install and upgrade gates before browser tests**
-
-Do not start browser acceptance against a database that skipped `-u monodoo_core,monodoo_home`. The runtime script remains the single source of truth for this sequence.
-
-- [ ] **Step 3: Update README with exact local verification commands**
+- [ ] **Step 2: Update README with exact local verification commands**
 
 Document:
-
-```bash
-python3 -m unittest tests.test_repository_contract -v
-cd tests/runtime && ./prepare_database.sh && cd ../..
-pytest tests/e2e -q
-```
-
-Also document the URL `http://localhost:8069/odoo` for local inspection and state that the first release supports Odoo 19 Community only.
-
-- [ ] **Step 4: Push the implementation branch and wait for CI**
-
-Do not merge based on local success alone. Record the workflow run ID and inspect every job conclusion.
-
-- [ ] **Step 5: Commit Task 5**
-
-```bash
-git add .github/workflows/ci.yml README.md
- git commit -m "ci: validate Monodoo Home on Odoo 19"
-```
-
----
-
-### Task 6: Release verification, documentation reconciliation, and PR
-
-**Files:**
-- Modify: `README.md`
-- Modify only if needed for factual reconciliation: `docs/superpowers/specs/2026-09-05-monodoo-home-design.md`
-
-**Interfaces:**
-- Consumes: all prior implementation and CI evidence.
-- Produces: reviewable PR for Monodoo v1; no `facodi-deploy` changes.
-
-- [ ] **Step 1: Run the complete verification sequence from a clean workspace**
 
 ```bash
 python3 -m unittest tests.test_repository_contract -v
@@ -882,83 +1048,110 @@ python3 -m venv .venv-test
 . .venv-test/bin/activate
 pip install -r tests/requirements.txt
 python -m playwright install chromium
-cd tests/runtime
-./prepare_database.sh
-cd ../..
+tests/runtime/prepare_database.sh
 pytest tests/e2e -q
 ```
 
-Then run the dedicated HOOT suite. All must pass before claiming the release is ready.
+Also document `http://localhost:8069/odoo`, module install names, and Odoo 19 Community-only support.
 
-- [ ] **Step 2: Verify the 19 acceptance criteria explicitly**
+- [ ] **Step 3: Run the same commands locally before pushing**
 
-Create a local review checklist mapping every criterion from spec section 9 to one automated test or direct inspection. In particular, manually inspect the repository for:
+Expected: all pass.
+
+- [ ] **Step 4: Commit Task 5**
 
 ```bash
-grep -R "route.*odoo\|/odoo" monodoo_core monodoo_home || true
-grep -R "facodi" monodoo_core monodoo_home || true
-grep -R "patch(NavBar\|web.NavBar" monodoo_home || true
+git add .github/workflows/ci.yml README.md
+git commit -m "ci: validate Monodoo Home on Odoo 19"
 ```
 
-Expected: no controller override, no FACODI coupling, no navbar patch. The literal `/odoo` may appear only in documentation/tests discussing expected routing, not in a custom controller implementation.
+- [ ] **Step 5: Push and inspect the workflow run**
 
-- [ ] **Step 3: Review the patch against the exact Odoo 19 source again**
+```bash
+git push -u origin feat/community-home
+```
 
-Confirm before PR that upstream still has:
+Record the GitHub Actions run ID and inspect every job conclusion. Do not call the branch green while any job is queued, running, skipped unexpectedly, or failed.
 
-- `WebClient.loadRouterState()` calling `_loadDefaultApp()` only when no state loaded.
-- `_loadDefaultApp()` selecting the first root app.
-- menu service `getApps()` returning root children.
-- `selectMenu()` using the standard action service and current-menu synchronization.
-- standard desktop/mobile navbar reading `menuService.getApps()`.
+---
 
-If any of these exact contracts changed, stop and update the implementation/spec rather than forcing the old patch.
+### Task 6: Release verification and PR
 
-- [ ] **Step 4: Reconcile README/spec with actual implementation without inflating scope**
+**Files:**
+- Modify only if actual behavior requires reconciliation: `README.md`
+- Modify only if actual implementation invalidates wording: `docs/superpowers/specs/2026-09-05-monodoo-home-design.md`
 
-Documentation must describe only behavior proven by tests. Do not add favorites, dashboards, branding, configuration profiles, or multi-version promises.
+- [ ] **Step 1: Re-run the complete clean verification sequence**
+
+```bash
+python3 -m unittest tests.test_repository_contract -v
+rm -rf .venv-test
+python3 -m venv .venv-test
+. .venv-test/bin/activate
+pip install -r tests/requirements.txt
+python -m playwright install chromium
+tests/runtime/prepare_database.sh
+pytest tests/e2e -q
+```
+
+Expected: PASS for contract, install, upgrade, HOOT, desktop browser, mobile browser, and restricted-user behavior.
+
+- [ ] **Step 2: Map every acceptance criterion to evidence**
+
+Verify all 19 criteria from spec section 9. Static inspection must additionally prove:
+
+```bash
+grep -R "facodi" monodoo_core monodoo_home && exit 1 || true
+grep -R "patch(NavBar\|t-inherit=\"web.NavBar\"" monodoo_home && exit 1 || true
+test ! -d monodoo_home/controllers
+test ! -d monodoo_core/controllers
+```
+
+The only WebClient prototype patch should be the one in `default_home.js`.
+
+- [ ] **Step 3: Re-check the exact upstream Odoo 19 integration contracts**
+
+Before opening the PR, compare the current Odoo 19 source used by CI and confirm:
+
+- `WebClient.loadRouterState()` calls `_loadDefaultApp()` only when no state is loaded.
+- `_loadDefaultApp()` selects the first root app.
+- `menuService.getApps()` returns root children.
+- `menuService.selectMenu()` uses the standard action service and current-menu synchronization.
+- desktop/mobile app navigation consumes the standard root-app list.
+
+If any contract changed, stop and update code/tests/spec instead of forcing the old integration.
+
+- [ ] **Step 4: Reconcile docs only with behavior actually proven**
+
+Do not add favorites, dashboards, branding, profiles, auto-install engines, or multi-version promises to v1 documentation.
 
 - [ ] **Step 5: Open the implementation PR**
 
-Use a branch such as `feat/community-home` created at execution time from the then-current `main`. PR title:
+PR title:
 
 ```text
 Add Odoo 19 Community Home launcher
 ```
 
-PR body must summarize:
+PR body summarizes:
 
 - `monodoo_core` + `monodoo_home` boundaries;
 - standard root-menu/client-action design;
 - isolated `_loadDefaultApp()` fallback patch;
 - permission inheritance through Odoo menu service;
-- contract/HOOT/runtime/browser test evidence;
-- explicit statement that `facodi-deploy` is not modified in this PR.
+- contract/HOOT/runtime/browser evidence with run IDs;
+- explicit statement that `facodi-deploy` is not modified.
 
-- [ ] **Step 6: Require green PR CI before merge**
+- [ ] **Step 6: Merge only after green PR CI**
 
-Fetch the PR workflow run, inspect every job, and merge only when all required jobs conclude `success`. After merge, verify the workflow on the resulting `main` SHA before calling Monodoo v1 independently green.
+Fetch the PR workflow run and inspect every job. Merge only when all required jobs conclude `success`.
 
-- [ ] **Step 7: Commit any final documentation-only reconciliation if necessary**
+- [ ] **Step 7: Verify post-merge `main`**
 
-```bash
-git add README.md docs/superpowers/specs/2026-09-05-monodoo-home-design.md
- git commit -m "docs: reconcile Monodoo Home release behavior"
-```
-
-Skip this commit when no factual documentation change is needed.
+Fetch the resulting `main` SHA and its workflow run. Only call Monodoo v1 independently green when post-merge CI also concludes `success`.
 
 ---
 
-## Follow-up Gate: `facodi-deploy`
+## Separate Follow-up Gate: `facodi-deploy`
 
-Do **not** include deployment integration in this implementation plan. Once Task 6 has produced a merged Monodoo `main` SHA with green post-merge CI, create a separate plan for `marcelo-m7/facodi-deploy` that:
-
-1. adds `addons/monodoo` as a git submodule pinned to the verified Monodoo SHA;
-2. adds `monodoo_core,monodoo_home` to `FACODI_MODULES`;
-3. confirms the existing Docker addon discovery copies both nested addons;
-4. extends FACODI runtime acceptance so authenticated neutral `/odoo` renders `.o_monodoo_home`;
-5. validates FACODI deep links and existing Website/eLearning flows are unchanged;
-6. merges only after the canonical Coolify/runtime acceptance is green.
-
-This second plan must use the exact merged Monodoo SHA as its input; it must not copy Monodoo source into `facodi-deploy`.
+Do **not** implement FACODI deployment integration under this plan. Once Task 6 produces a merged Monodoo `main` SHA with green post-merge CI, write a separate `facodi-deploy` plan using that exact SHA. The follow-up must add `addons/monodoo` as a pinned git submodule, add `monodoo_core,monodoo_home` to `FACODI_MODULES`, verify the current nested-addon Docker discovery, extend authenticated `/odoo` runtime acceptance, verify existing Website/eLearning/deep-link behavior, and merge only after the canonical Coolify/runtime acceptance is green.
