@@ -42,6 +42,10 @@ defineMenus([
     },
 ]);
 
+// Give this addon's HOOT jobs a stable public runner filter.  Filtering by a
+// tag avoids coupling CI to the implementation-specific hash of a suite path.
+test.tags("monodoo");
+
 test("renders permitted apps in Odoo order and excludes Home", async () => {
     await mountWithCleanup(MonodooHome);
     expect(".o_monodoo_app_card").toHaveCount(2);
