@@ -4,12 +4,13 @@ BASE_URL = "http://127.0.0.1:8069"
 
 
 def wait_for_webclient(page: Page) -> None:
-    """Wait for the Odoo SPA shell instead of network idleness.
+    """Wait for the Odoo SPA shell instead of another navigation event.
 
     Odoo keeps a websocket open for the bus service, so a logged-in backend
-    session is not expected to become network-idle.
+    session is not expected to become network-idle.  Callers may already be on
+    a valid deep link when this helper is reached, therefore waiting for a new
+    URL event here would introduce a race even though the WebClient is ready.
     """
-    page.wait_for_url("**/odoo**")
     page.locator(".o_main_navbar").wait_for(state="visible")
 
 
