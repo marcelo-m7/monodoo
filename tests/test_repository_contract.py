@@ -57,13 +57,16 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertEqual(menu.attrib["groups"], "base.group_user")
         self.assertEqual(menu.attrib["sequence"], "1")
 
-    def test_home_manifest_declares_task2_assets(self):
+    def test_home_manifest_declares_assets(self):
         manifest = load_manifest("monodoo_home")
         self.assertEqual(manifest["data"], ["data/home_action.xml"])
         assets = manifest["assets"]
         self.assertEqual(
             assets["web.assets_backend"],
-            ["monodoo_home/static/src/home/**/*"],
+            [
+                "monodoo_home/static/src/home/**/*",
+                "monodoo_home/static/src/webclient/default_home.js",
+            ],
         )
         self.assertEqual(
             assets["web.assets_unit_tests"],
@@ -75,9 +78,23 @@ class RepositoryContractTest(unittest.TestCase):
             "static/src/home/home.js",
             "static/src/home/home.xml",
             "static/src/home/home.scss",
+            "static/src/webclient/default_home.js",
             "static/tests/home.test.js",
+            "static/tests/default_home.test.js",
         ):
             self.assertTrue((ROOT / "monodoo_home" / relative).is_file(), relative)
+
+    def test_webclient_patch_boundary(self):
+        js_files = list((ROOT / "monodoo_home").rglob("*.js"))
+        source = "\n".join(path.read_text(encoding="utf-8") for path in js_files)
+        self.assertEqual(source.count("patch(WebClient.prototype"), 1)
+        self.assertNotIn("patch(NavBar", source)
+        self.assertNotIn('t-inherit="web.NavBar"', source)
+        adapter = (
+            ROOT / "monodoo_home" / "static" / "src" / "webclient" / "default_home.js"
+        ).read_text(encoding="utf-8")
+        self.assertIn("_loadDefaultApp()", adapter)
+        self.assertNotIn("loadRouterState()", adapter)
 
 
 if __name__ == "__main__":

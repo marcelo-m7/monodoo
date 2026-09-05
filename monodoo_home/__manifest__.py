@@ -7,7 +7,10 @@
     "depends": ["web", "monodoo_core"],
     "data": ["data/home_action.xml"],
     "assets": {
-        "web.assets_backend": ["monodoo_home/static/src/home/**/*"],
+        "web.assets_backend": [
+            "monodoo_home/static/src/home/**/*",
+            "monodoo_home/static/src/webclient/default_home.js",
+        ],
         "web.assets_unit_tests": ["monodoo_home/static/tests/**/*.test.js"],
     },
     "installable": True,
