@@ -28,7 +28,7 @@ services:
     command:
       - --database=monodoo_test
       - --db-filter=^monodoo_test$
-      - --without-demo=all
+      - --without-demo
       - --workers=0
       - --max-cron-threads=0
 
