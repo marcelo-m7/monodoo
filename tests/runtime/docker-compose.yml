@@ -24,9 +24,13 @@ services:
       PASSWORD: odoo
     volumes:
       - ../..:/mnt/extra-addons:ro
+      - odoo-data:/var/lib/odoo
     command:
       - --database=monodoo_test
       - --db-filter=^monodoo_test$
       - --without-demo=all
       - --workers=0
       - --max-cron-threads=0
+
+volumes:
+  odoo-data:
