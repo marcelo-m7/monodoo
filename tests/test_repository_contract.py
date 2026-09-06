@@ -101,7 +101,9 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn("repository-contract:", workflow)
         self.assertIn("odoo-runtime:", workflow)
         self.assertIn("tests/runtime/prepare_database.sh", workflow)
-        self.assertIn("pytest tests/e2e -q", workflow)
+        self.assertIn("pytest tests/e2e/test_home.py -vv -s --maxfail=1", workflow)
+        self.assertIn("timeout 90s pytest tests/e2e/test_hoot.py -vv -s --maxfail=1", workflow)
+        self.assertIn("timeout-minutes: 12", workflow)
 
 
 if __name__ == "__main__":
