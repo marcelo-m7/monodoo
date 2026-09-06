@@ -7,7 +7,7 @@ docker compose down -v --remove-orphans
 docker compose up -d db
 
 docker compose run --rm odoo \
-  --database=monodoo_test --stop-after-init --without-demo=all \
+  --database=monodoo_test --stop-after-init --without-demo=True \
   -i monodoo_core,monodoo_home,crm,project
 
 cat <<'PY' | docker compose run --rm -T odoo odoo shell -d monodoo_test
@@ -28,7 +28,7 @@ env.cr.commit()
 PY
 
 docker compose run --rm odoo \
-  --database=monodoo_test --stop-after-init --without-demo=all \
+  --database=monodoo_test --stop-after-init --without-demo=True \
   -u monodoo_core,monodoo_home
 
 docker compose up -d odoo
