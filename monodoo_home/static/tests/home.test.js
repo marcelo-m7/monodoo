@@ -42,10 +42,7 @@ defineMenus([
     },
 ]);
 
-// Give this addon's HOOT jobs a stable public runner filter.  Filtering by a
-// tag avoids coupling CI to the implementation-specific hash of a suite path.
 test.tags("monodoo");
-
 test("renders permitted apps in Odoo order and excludes Home", async () => {
     await mountWithCleanup(MonodooHome);
     expect(".o_monodoo_app_card").toHaveCount(2);
@@ -54,6 +51,7 @@ test("renders permitted apps in Odoo order and excludes Home", async () => {
     expect(".o_monodoo_app_fallback_icon").toHaveCount(1);
 });
 
+test.tags("monodoo");
 test("filters locally by application name", async () => {
     await mountWithCleanup(MonodooHome);
     await contains(".o_monodoo_search").edit("pro", { confirm: false });
@@ -62,6 +60,7 @@ test("filters locally by application name", async () => {
     expect(".o_monodoo_app_name").toHaveText("Project");
 });
 
+test.tags("monodoo");
 test("opens an app through the menu service", async () => {
     await mountWithCleanup(MonodooHome);
     await contains(".o_monodoo_app_card").click();
@@ -69,6 +68,7 @@ test("opens an app through the menu service", async () => {
     expect(getService("menu").getCurrentApp().name).toBe("CRM");
 });
 
+test.tags("monodoo");
 test("renders an empty state when Home is the only root app", async () => {
     const component = await mountWithCleanup(MonodooHome);
     patchWithCleanup(component.menuService, {
@@ -87,6 +87,7 @@ test("renders an empty state when Home is the only root app", async () => {
     expect(".o_monodoo_empty").toHaveCount(1);
 });
 
+test.tags("monodoo");
 test("typing in search performs no fetch", async () => {
     await mountWithCleanup(MonodooHome);
     patchWithCleanup(browser, {
