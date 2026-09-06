@@ -3,6 +3,14 @@ from playwright.sync_api import Page, TimeoutError as PlaywrightTimeoutError
 from tests.e2e.helpers import BASE_URL, login
 
 
+def _is_hoot_success(text: str) -> bool:
+    # HOOT emits styled browser-console messages such as
+    # "%c[HOOT]%c Test suite succeeded". Playwright preserves those %c
+    # placeholders in message.text, so do not require the two fragments to be
+    # contiguous.
+    return "[HOOT]" in text and "Test suite succeeded" in text
+
+
 def test_hoot_suite_succeeds(page: Page) -> None:
     login(page, "admin", "admin")
 
@@ -15,7 +23,7 @@ def test_hoot_suite_succeeds(page: Page) -> None:
     # a user, which made this CI test appear hung.
     try:
         with page.expect_console_message(
-            predicate=lambda message: "[HOOT] Test suite succeeded" in message.text,
+            predicate=lambda message: _is_hoot_success(message.text),
             timeout=60_000,
         ) as success_info:
             page.goto(
@@ -29,4 +37,4 @@ def test_hoot_suite_succeeds(page: Page) -> None:
             f"url={page.url!r}; console tail:\n{tail}"
         ) from error
 
-    assert "[HOOT] Test suite succeeded" in success_info.value.text
+    assert _is_hoot_success(success_info.value.text)
