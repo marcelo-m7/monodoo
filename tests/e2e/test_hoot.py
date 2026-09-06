@@ -5,25 +5,20 @@ from tests.e2e.helpers import BASE_URL, login
 
 def test_hoot_suite_succeeds(page: Page) -> None:
     login(page, "admin", "admin")
-    hoot_messages: list[str] = []
+    page.goto(
+        f"{BASE_URL}/web/tests?loglevel=2&preset=desktop&timeout=15000&tag=monodoo",
+        wait_until="domcontentloaded",
+    )
 
-    def collect_hoot_message(message) -> None:
-        if "[HOOT]" in message.text:
-            hoot_messages.append(message.text)
-
-    page.on("console", collect_hoot_message)
-    with page.expect_console_message(
-        predicate=lambda message: "[HOOT]" in message.text
-        and (
-            "Test suite succeeded" in message.text
-            or "failed" in message.text.lower()
-        ),
+    # Odoo 19's HOOT UI marks the document title with a check/cross when the
+    # runner completes.  This is more reliable in Playwright than scraping
+    # console output, which is primarily consumed by Odoo's own browser_js
+    # harness.
+    page.wait_for_function(
+        "document.title.startsWith('✔') || document.title.startsWith('✖')",
         timeout=300_000,
-    ) as terminal_message:
-        page.goto(
-            f"{BASE_URL}/web/tests?headless&loglevel=2&preset=desktop&timeout=15000&tag=monodoo",
-            wait_until="domcontentloaded",
-        )
+    )
 
-    result = terminal_message.value.text
-    assert "Test suite succeeded" in result, "\n".join(hoot_messages)
+    status = page.locator(".HootStatusPanel").inner_text()
+    assert "9 tests completed" in status, status
+    assert page.title().startswith("✔"), status
