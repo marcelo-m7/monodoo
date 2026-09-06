@@ -1,4 +1,4 @@
-import { expect, test } from "@odoo/hoot";
+import { beforeEach, expect, test } from "@odoo/hoot";
 import { animationFrame } from "@odoo/hoot-mock";
 import {
     contains,
@@ -13,34 +13,36 @@ import { browser } from "@web/core/browser/browser";
 
 import { MonodooHome } from "@monodoo_home/home/home";
 
-const testAction = useTestClientAction();
-defineActions([
-    { ...testAction, id: 1000, params: { description: "Home" } },
-    { ...testAction, id: 1001, params: { description: "CRM" } },
-    { ...testAction, id: 1002, params: { description: "Project" } },
-]);
-defineMenus([
-    {
-        id: 10,
-        name: "Home",
-        actionID: 1000,
-        xmlid: "monodoo_home.menu_monodoo_home",
-    },
-    {
-        id: 20,
-        name: "CRM",
-        actionID: 1001,
-        xmlid: "crm.crm_menu_root",
-        webIconData: "data:image/png;base64,AA==",
-    },
-    {
-        id: 30,
-        name: "Project",
-        actionID: 1002,
-        xmlid: "project.menu_main_pm",
-        webIconData: undefined,
-    },
-]);
+beforeEach(() => {
+    const testAction = useTestClientAction();
+    defineActions([
+        { ...testAction, id: 1000, params: { description: "Home" } },
+        { ...testAction, id: 1001, params: { description: "CRM" } },
+        { ...testAction, id: 1002, params: { description: "Project" } },
+    ]);
+    defineMenus([
+        {
+            id: 10,
+            name: "Home",
+            actionID: 1000,
+            xmlid: "monodoo_home.menu_monodoo_home",
+        },
+        {
+            id: 20,
+            name: "CRM",
+            actionID: 1001,
+            xmlid: "crm.crm_menu_root",
+            webIconData: "data:image/png;base64,AA==",
+        },
+        {
+            id: 30,
+            name: "Project",
+            actionID: 1002,
+            xmlid: "project.menu_main_pm",
+            webIconData: undefined,
+        },
+    ]);
+});
 
 test.tags("monodoo");
 test("renders permitted apps in Odoo order and excludes Home", async () => {
