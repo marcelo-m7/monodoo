@@ -1,0 +1,13 @@
+.o_monodoo_home_inner {
+    max-width: 1100px;
+}
+
+.o_monodoo_app_card {
+    min-height: 7rem;
+
+    .o_app_icon {
+        width: 3rem;
+        height: 3rem;
+        object-fit: contain;
+    }
+}

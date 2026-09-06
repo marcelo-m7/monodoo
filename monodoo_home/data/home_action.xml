@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_monodoo_home" model="ir.actions.client">
+        <field name="name">Home</field>
+        <field name="tag">monodoo_home</field>
+    </record>
+    <menuitem
+        id="menu_monodoo_home"
+        name="Home"
+        action="action_monodoo_home"
+        sequence="1"
+        groups="base.group_user"
+    />
+</odoo>

@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo -d postgres"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  odoo:
+    image: odoo:19.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8069:8069"
+    environment:
+      HOST: db
+      USER: odoo
+      PASSWORD: odoo
+    volumes:
+      - ../..:/mnt/extra-addons:ro
+      - odoo-data:/var/lib/odoo
+    command:
+      - --database=monodoo_test
+      - --db-filter=^monodoo_test$
+      - --without-demo
+      - --workers=0
+      - --max-cron-threads=0
+
+volumes:
+  odoo-data:
