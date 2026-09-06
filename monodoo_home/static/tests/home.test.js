@@ -20,28 +20,31 @@ beforeEach(() => {
         { ...testAction, id: 1001, params: { description: "CRM" } },
         { ...testAction, id: 1002, params: { description: "Project" } },
     ]);
-    defineMenus([
-        {
-            id: 10,
-            name: "Home",
-            actionID: 1000,
-            xmlid: "monodoo_home.menu_monodoo_home",
-        },
-        {
-            id: 20,
-            name: "CRM",
-            actionID: 1001,
-            xmlid: "crm.crm_menu_root",
-            webIconData: "data:image/png;base64,AA==",
-        },
-        {
-            id: 30,
-            name: "Project",
-            actionID: 1002,
-            xmlid: "project.menu_main_pm",
-            webIconData: undefined,
-        },
-    ]);
+    defineMenus(
+        [
+            {
+                id: 10,
+                name: "Home",
+                actionID: 1000,
+                xmlid: "monodoo_home.menu_monodoo_home",
+            },
+            {
+                id: 20,
+                name: "CRM",
+                actionID: 1001,
+                xmlid: "crm.crm_menu_root",
+                webIconData: "data:image/png;base64,AA==",
+            },
+            {
+                id: 30,
+                name: "Project",
+                actionID: 1002,
+                xmlid: "project.menu_main_pm",
+                webIconData: undefined,
+            },
+        ],
+        { mode: "replace" }
+    );
 });
 
 test.tags("monodoo");
