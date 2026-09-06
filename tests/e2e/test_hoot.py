@@ -5,25 +5,28 @@ from tests.e2e.helpers import BASE_URL, login
 
 def test_hoot_suite_succeeds(page: Page) -> None:
     login(page, "admin", "admin")
-    page.goto(
-        f"{BASE_URL}/web/tests?loglevel=2&preset=desktop&timeout=15000&tag=monodoo",
-        wait_until="domcontentloaded",
-    )
 
-    # Odoo 19's HOOT UI marks the document title with a check/cross when the
-    # runner completes. Keep this bounded so a broken runner cannot make CI
-    # appear hung for several minutes.
+    messages: list[str] = []
+    page.on("console", lambda message: messages.append(message.text))
+
+    # Odoo 19's own HOOT browser tests use the `headless` query flag and wait
+    # for the runner's console success signal. Without `headless`, /web/tests
+    # intentionally remains in the interactive `Ready` state until started by
+    # a user, which made this CI test appear hung.
     try:
-        page.wait_for_function(
-            "document.title.startsWith('✔') || document.title.startsWith('✖')",
+        with page.expect_console_message(
+            predicate=lambda message: "[HOOT] Test suite succeeded" in message.text,
             timeout=60_000,
-        )
+        ) as success_info:
+            page.goto(
+                f"{BASE_URL}/web/tests?headless&loglevel=2&preset=desktop&timeout=15000&tag=monodoo",
+                wait_until="domcontentloaded",
+            )
     except PlaywrightTimeoutError as error:
-        status = page.locator(".HootStatusPanel").inner_text(timeout=5_000)
+        tail = "\n".join(messages[-30:])
         raise AssertionError(
-            f"HOOT did not finish within 60s. title={page.title()!r}; status={status!r}"
+            "HOOT did not emit its Odoo 19 success signal within 60s. "
+            f"url={page.url!r}; console tail:\n{tail}"
         ) from error
 
-    status = page.locator(".HootStatusPanel").inner_text()
-    assert "9 tests completed" in status, status
-    assert page.title().startswith("✔"), status
+    assert "[HOOT] Test suite succeeded" in success_info.value.text
