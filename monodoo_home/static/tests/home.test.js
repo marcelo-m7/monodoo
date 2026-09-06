@@ -4,7 +4,6 @@ import {
     contains,
     defineActions,
     defineMenus,
-    getService,
     mountWithCleanup,
     patchWithCleanup,
     useTestClientAction,
@@ -51,7 +50,8 @@ test.tags("monodoo");
 test("renders permitted apps in Odoo order and excludes Home", async () => {
     await mountWithCleanup(MonodooHome);
     expect(".o_monodoo_app_card").toHaveCount(2);
-    expect(".o_monodoo_app_name").toHaveText("CRM\nProject");
+    expect(".o_monodoo_app_grid > :nth-child(1) .o_monodoo_app_name").toHaveText("CRM");
+    expect(".o_monodoo_app_grid > :nth-child(2) .o_monodoo_app_name").toHaveText("Project");
     expect(".o_monodoo_home .o_app_icon").toHaveCount(1);
     expect(".o_monodoo_app_fallback_icon").toHaveCount(1);
 });
@@ -67,10 +67,14 @@ test("filters locally by application name", async () => {
 
 test.tags("monodoo");
 test("opens an app through the menu service", async () => {
-    await mountWithCleanup(MonodooHome);
+    const component = await mountWithCleanup(MonodooHome);
+    patchWithCleanup(component.menuService, {
+        selectMenu(app) {
+            expect.step(`select ${app.name}`);
+        },
+    });
     await contains(".o_monodoo_app_card").click();
-    await animationFrame();
-    expect(getService("menu").getCurrentApp().name).toBe("CRM");
+    expect.verifySteps(["select CRM"]);
 });
 
 test.tags("monodoo");

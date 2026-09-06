@@ -1,4 +1,5 @@
 import { expect, test } from "@odoo/hoot";
+import { animationFrame } from "@odoo/hoot-mock";
 import {
     defineActions,
     defineMenus,
@@ -88,5 +89,6 @@ test("WebClient opens Monodoo Home when no router state exists", async () => {
         { mode: "replace" }
     );
     await mountWithCleanup(WebClient);
+    await animationFrame();
     expect(".o_monodoo_home").toHaveCount(1);
 });

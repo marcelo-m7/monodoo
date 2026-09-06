@@ -14,7 +14,7 @@ def browser() -> Browser:
 
 @pytest.fixture
 def page(browser: Browser) -> Page:
-    context = browser.new_context()
+    context = browser.new_context(viewport={"width": 1366, "height": 768})
     page = context.new_page()
     page_errors: list[str] = []
     page.on("pageerror", lambda error: page_errors.append(str(error)))
