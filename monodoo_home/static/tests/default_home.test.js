@@ -11,6 +11,7 @@ import { MONODOO_HOME_MENU_XMLID } from "@monodoo_home/home/constants";
 import { loadMonodooDefaultApp } from "@monodoo_home/webclient/default_home";
 import "@monodoo_home/home/home";
 
+test.tags("monodoo");
 test("default helper selects Home when it is available", async () => {
     const home = { id: 10, xmlid: MONODOO_HOME_MENU_XMLID };
     const menuService = {
@@ -21,6 +22,7 @@ test("default helper selects Home when it is available", async () => {
     expect.verifySteps(["select 10"]);
 });
 
+test.tags("monodoo");
 test("default helper falls back when Home is missing", async () => {
     const menuService = {
         getApps: () => [{ id: 20, xmlid: "crm.crm_menu_root" }],
@@ -30,6 +32,7 @@ test("default helper falls back when Home is missing", async () => {
     expect.verifySteps(["fallback"]);
 });
 
+test.tags("monodoo");
 test("default helper falls back when Home selection fails", async () => {
     const home = { id: 10, xmlid: MONODOO_HOME_MENU_XMLID };
     const menuService = {
@@ -43,6 +46,7 @@ test("default helper falls back when Home selection fails", async () => {
     expect.verifySteps(["select", "fallback"]);
 });
 
+test.tags("monodoo");
 test("WebClient opens Monodoo Home when no router state exists", async () => {
     const testAction = useTestClientAction();
     defineActions([
