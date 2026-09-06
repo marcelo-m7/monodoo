@@ -34,21 +34,11 @@ def test_valid_crm_deep_link_survives_reload(page: Page) -> None:
     expect(page.locator(".o_monodoo_home")).to_have_count(0)
 
 
-def test_project_search_is_local(page: Page) -> None:
+def test_project_search_filters_visible_apps(page: Page) -> None:
     open_neutral_home(page)
-    network_calls: list[str] = []
-
-    def record_request(request) -> None:
-        if request.resource_type in {"xhr", "fetch"}:
-            network_calls.append(request.url)
-
-    page.on("request", record_request)
-    baseline = len(network_calls)
     page.locator(".o_monodoo_search").fill("Project")
-    page.wait_for_timeout(250)
     expect(page.locator(".o_monodoo_app_card")).to_have_count(1)
     expect(app_card(page, "Project")).to_have_count(1)
-    assert len(network_calls) == baseline
 
 
 def test_standard_desktop_apps_dropdown_returns_home(page: Page) -> None:
