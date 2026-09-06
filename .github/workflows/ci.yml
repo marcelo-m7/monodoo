@@ -4,6 +4,10 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: monodoo-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   repository-contract:
     runs-on: ubuntu-latest
