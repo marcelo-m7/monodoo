@@ -247,8 +247,7 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn("node --experimental-default-type=module --test tests/test_navigation_state.mjs", workflow)
         self.assertIn("odoo-runtime:", workflow)
         self.assertIn("tests/runtime/prepare_database.sh", workflow)
-        self.assertIn("pytest tests/e2e/test_home.py::test_admin_neutral_odoo_opens_home_with_business_apps -vv -s", workflow)
-        self.assertIn("pytest tests/e2e/test_home.py::test_valid_crm_deep_link_survives_reload -vv -s", workflow)
+        self.assertIn("pytest tests/e2e/test_home.py -vv -s --maxfail=1", workflow)
         self.assertIn("timeout 90s pytest tests/e2e/test_hoot.py -vv -s --maxfail=1", workflow)
         self.assertIn("timeout-minutes: 12", workflow)
 
