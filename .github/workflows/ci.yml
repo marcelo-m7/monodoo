@@ -37,8 +37,39 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: chmod +x tests/runtime/prepare_database.sh tests/runtime/wait_http.py
       - run: tests/runtime/prepare_database.sh
-      - name: Run launcher E2E tests
-        run: pytest tests/e2e/test_home.py -vv -s --maxfail=1
+      - name: E2E neutral Home
+        id: e2e_home
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_admin_neutral_odoo_opens_home_with_business_apps -vv -s
+      - name: E2E deep link
+        id: e2e_deep_link
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_valid_crm_deep_link_survives_reload -vv -s
+      - name: E2E app search
+        id: e2e_search
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_project_search_filters_visible_apps -vv -s
+      - name: E2E desktop app menu
+        id: e2e_desktop_menu
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_standard_desktop_apps_dropdown_returns_home -vv -s
+      - name: E2E restricted user
+        id: e2e_restricted
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_restricted_project_user_does_not_see_crm -vv -s
+      - name: E2E mobile app menu
+        id: e2e_mobile_menu
+        continue-on-error: true
+        run: pytest tests/e2e/test_home.py::test_standard_mobile_apps_sidebar_returns_home -vv -s
+      - name: Enforce launcher E2E results
+        if: always()
+        run: |
+          test "${{ steps.e2e_home.outcome }}" = success
+          test "${{ steps.e2e_deep_link.outcome }}" = success
+          test "${{ steps.e2e_search.outcome }}" = success
+          test "${{ steps.e2e_desktop_menu.outcome }}" = success
+          test "${{ steps.e2e_restricted.outcome }}" = success
+          test "${{ steps.e2e_mobile_menu.outcome }}" = success
       - name: Run Monodoo HOOT tests
         run: timeout 90s pytest tests/e2e/test_hoot.py -vv -s --maxfail=1
       - if: always()
