@@ -17,6 +17,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m unittest tests.test_repository_contract -v
+      - run: python -m unittest tests.test_theme_tokens -v
+      - run: node --experimental-default-type=module --test tests/test_theme_runtime.mjs
 
   odoo-runtime:
     runs-on: ubuntu-latest

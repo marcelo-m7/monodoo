@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_monodoo_theme_profile_list" model="ir.ui.view">
+        <field name="name">monodoo.theme.profile.list</field>
+        <field name="model">monodoo.theme.profile</field>
+        <field name="arch" type="xml">
+            <list string="Monodoo Theme Profiles">
+                <field name="name"/>
+                <field name="key"/>
+                <field name="parent_id"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_monodoo_theme_profile_form" model="ir.ui.view">
+        <field name="name">monodoo.theme.profile.form</field>
+        <field name="model">monodoo.theme.profile</field>
+        <field name="arch" type="xml">
+            <form string="Monodoo Theme Profile">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="Theme name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="key"/>
+                            <field name="parent_id"/>
+                            <field name="active"/>
+                        </group>
+                        <group>
+                            <field name="font_family" placeholder="system-ui, sans-serif"/>
+                            <field name="radius_sm" placeholder="0.25rem"/>
+                            <field name="radius_md" placeholder="0.375rem"/>
+                            <field name="radius_lg" placeholder="0.5rem"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Light" name="light_palette">
+                            <group col="4">
+                                <field name="light_brand" widget="color"/>
+                                <field name="light_primary" widget="color"/>
+                                <field name="light_accent" widget="color"/>
+                                <field name="light_background" widget="color"/>
+                                <field name="light_surface" widget="color"/>
+                                <field name="light_text" widget="color"/>
+                                <field name="light_muted" widget="color"/>
+                                <field name="light_border" widget="color"/>
+                                <field name="light_success" widget="color"/>
+                                <field name="light_warning" widget="color"/>
+                                <field name="light_danger" widget="color"/>
+                            </group>
+                        </page>
+                        <page string="Dark" name="dark_palette">
+                            <group col="4">
+                                <field name="dark_brand" widget="color"/>
+                                <field name="dark_primary" widget="color"/>
+                                <field name="dark_accent" widget="color"/>
+                                <field name="dark_background" widget="color"/>
+                                <field name="dark_surface" widget="color"/>
+                                <field name="dark_text" widget="color"/>
+                                <field name="dark_muted" widget="color"/>
+                                <field name="dark_border" widget="color"/>
+                                <field name="dark_success" widget="color"/>
+                                <field name="dark_warning" widget="color"/>
+                                <field name="dark_danger" widget="color"/>
+                            </group>
+                        </page>
+                        <page string="Children" name="children">
+                            <field name="child_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="key"/>
+                                    <field name="active"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <group>
+                        <field name="description" placeholder="Describe the identity and intended use of this theme."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_monodoo_theme_profiles" model="ir.actions.act_window">
+        <field name="name">Monodoo Theme Profiles</field>
+        <field name="res_model">monodoo.theme.profile</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

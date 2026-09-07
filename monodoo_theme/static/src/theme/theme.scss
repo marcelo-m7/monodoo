@@ -1,0 +1,65 @@
+:root {
+    --monodoo-brand: #71639e;
+    --monodoo-primary: #71639e;
+    --monodoo-accent: #017e84;
+    --monodoo-background: #f8f9fa;
+    --monodoo-surface: #ffffff;
+    --monodoo-text: #212529;
+    --monodoo-muted: #6c757d;
+    --monodoo-border: #dee2e6;
+    --monodoo-success: #28a745;
+    --monodoo-warning: #ffac00;
+    --monodoo-danger: #dc3545;
+    --monodoo-radius-sm: 0.25rem;
+    --monodoo-radius-md: 0.375rem;
+    --monodoo-radius-lg: 0.5rem;
+}
+
+html[data-monodoo-theme="dark"] {
+    color-scheme: dark;
+}
+
+.o_web_client {
+    background-color: var(--monodoo-background);
+    color: var(--monodoo-text);
+    font-family: var(--monodoo-font-family, inherit);
+
+    .o_main_navbar {
+        background: var(--monodoo-brand) !important;
+        border-color: var(--monodoo-border);
+    }
+
+    .o_control_panel {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o_form_view .o_form_sheet_bg,
+    .o_list_renderer,
+    .o_kanban_renderer {
+        background-color: var(--monodoo-background);
+    }
+
+    .o_form_view .o_form_sheet,
+    .o_list_renderer .o_list_table,
+    .o_kanban_renderer .o_kanban_record {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .text-muted {
+        color: var(--monodoo-muted) !important;
+    }
+
+    .btn-primary {
+        background-color: var(--monodoo-primary);
+        border-color: var(--monodoo-primary);
+    }
+
+    .btn-outline-primary {
+        color: var(--monodoo-primary);
+        border-color: var(--monodoo-primary);
+    }
+}
