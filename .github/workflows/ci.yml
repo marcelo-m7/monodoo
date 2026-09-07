@@ -37,26 +37,8 @@ jobs:
       - run: python -m playwright install --with-deps chromium
       - run: chmod +x tests/runtime/prepare_database.sh tests/runtime/wait_http.py
       - run: tests/runtime/prepare_database.sh
-      - name: E2E neutral Home
-        id: e2e_home
-        continue-on-error: true
-        run: pytest tests/e2e/test_home.py::test_admin_neutral_odoo_opens_home_with_business_apps -vv -s
-      - name: E2E deep link
-        id: e2e_deep_link
-        continue-on-error: true
-        run: pytest tests/e2e/test_home.py::test_valid_crm_deep_link_survives_reload -vv -s
-      - name: E2E app search
-        id: e2e_search
-        continue-on-error: true
-        run: pytest tests/e2e/test_home.py::test_project_search_filters_visible_apps -vv -s
-      - name: E2E desktop app menu
-        id: e2e_desktop_menu
-        continue-on-error: true
-        run: pytest tests/e2e/test_home.py::test_standard_desktop_apps_dropdown_returns_home -vv -s
-      - name: E2E restricted user
-        id: e2e_restricted
-        continue-on-error: true
-        run: pytest tests/e2e/test_home.py::test_restricted_project_user_does_not_see_crm -vv -s
+      - name: E2E Home release gate
+        run: pytest tests/e2e/test_home.py -vv -s --maxfail=1
       - name: Mobile diagnostic - neutral Home
         id: mobile_home
         continue-on-error: true
@@ -81,21 +63,6 @@ jobs:
         id: mobile_return_home
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_home_app_returns_to_monodoo_home -vv -s
-      - name: Enforce neutral Home result
-        if: always()
-        run: test "${{ steps.e2e_home.outcome }}" = success
-      - name: Enforce deep link result
-        if: always()
-        run: test "${{ steps.e2e_deep_link.outcome }}" = success
-      - name: Enforce search result
-        if: always()
-        run: test "${{ steps.e2e_search.outcome }}" = success
-      - name: Enforce desktop menu result
-        if: always()
-        run: test "${{ steps.e2e_desktop_menu.outcome }}" = success
-      - name: Enforce restricted user result
-        if: always()
-        run: test "${{ steps.e2e_restricted.outcome }}" = success
       - name: Enforce mobile Home result
         if: always()
         run: test "${{ steps.mobile_home.outcome }}" = success
