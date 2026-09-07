@@ -57,6 +57,14 @@ jobs:
         id: e2e_restricted
         continue-on-error: true
         run: pytest tests/e2e/test_home.py::test_restricted_project_user_does_not_see_crm -vv -s
+      - name: Mobile diagnostic - neutral Home
+        id: mobile_home
+        continue-on-error: true
+        run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_neutral_home_is_visible -vv -s
+      - name: Mobile diagnostic - Project card
+        id: mobile_project_card
+        continue-on-error: true
+        run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_project_card_is_visible -vv -s
       - name: Mobile diagnostic - menu toggle
         id: mobile_toggle
         continue-on-error: true
@@ -88,6 +96,12 @@ jobs:
       - name: Enforce restricted user result
         if: always()
         run: test "${{ steps.e2e_restricted.outcome }}" = success
+      - name: Enforce mobile Home result
+        if: always()
+        run: test "${{ steps.mobile_home.outcome }}" = success
+      - name: Enforce mobile Project card result
+        if: always()
+        run: test "${{ steps.mobile_project_card.outcome }}" = success
       - name: Enforce mobile toggle result
         if: always()
         run: test "${{ steps.mobile_toggle.outcome }}" = success
