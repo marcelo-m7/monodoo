@@ -8,7 +8,7 @@ docker compose up -d db
 
 docker compose run --rm odoo \
   --database=monodoo_test --stop-after-init --without-demo=True \
-  -i monodoo_core,monodoo_home,crm,project
+  -i monodoo_core,monodoo_home,monodoo_theme,crm,project
 
 cat <<'PY' | docker compose run --rm -T odoo odoo shell -d monodoo_test
 admin = env.ref("base.user_admin")
@@ -29,7 +29,7 @@ PY
 
 docker compose run --rm odoo \
   --database=monodoo_test --stop-after-init --without-demo=True \
-  -u monodoo_core,monodoo_home
+  -u monodoo_core,monodoo_home,monodoo_theme
 
 docker compose up -d odoo
 python3 wait_http.py http://127.0.0.1:8069/web/login 90

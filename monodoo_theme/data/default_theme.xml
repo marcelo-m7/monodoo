@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="theme_default" model="monodoo.theme.profile">
+        <field name="name">Monodoo Default</field>
+        <field name="key">default</field>
+        <field name="description">Neutral Odoo 19 Community-compatible backend identity.</field>
+        <field name="light_brand">#71639e</field>
+        <field name="light_primary">#71639e</field>
+        <field name="light_accent">#017e84</field>
+        <field name="light_background">#f8f9fa</field>
+        <field name="light_surface">#ffffff</field>
+        <field name="light_text">#212529</field>
+        <field name="light_muted">#6c757d</field>
+        <field name="light_border">#dee2e6</field>
+        <field name="light_success">#28a745</field>
+        <field name="light_warning">#ffac00</field>
+        <field name="light_danger">#dc3545</field>
+        <field name="dark_brand">#71639e</field>
+        <field name="dark_primary">#887ab8</field>
+        <field name="dark_accent">#2ea6aa</field>
+        <field name="dark_background">#181a1b</field>
+        <field name="dark_surface">#242628</field>
+        <field name="dark_text">#f8f9fa</field>
+        <field name="dark_muted">#adb5bd</field>
+        <field name="dark_border">#495057</field>
+        <field name="dark_success">#43c463</field>
+        <field name="dark_warning">#ffc247</field>
+        <field name="dark_danger">#e35d6a</field>
+        <field name="radius_sm">0.25rem</field>
+        <field name="radius_md">0.375rem</field>
+        <field name="radius_lg">0.5rem</field>
+    </record>
+</odoo>
