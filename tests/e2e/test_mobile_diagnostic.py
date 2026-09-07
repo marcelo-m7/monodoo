@@ -61,8 +61,9 @@ def test_mobile_project_card_is_visible(page: Page) -> None:
 
 def test_mobile_project_exposes_standard_menu_toggle(page: Page) -> None:
     open_mobile_project(page)
-    print(f"MOBILE_NAV_STATE={mobile_nav_state(page)!r}")
-    expect(page.locator("a.o_menu_toggle")).to_be_visible()
+    toggle = page.locator("a.o_menu_toggle")
+    state = mobile_nav_state(page)
+    assert toggle.is_visible(), f"MOBILE_NAV_STATE={state!r}"
 
 
 def test_mobile_menu_toggle_exposes_sidebar_topbar(page: Page) -> None:
