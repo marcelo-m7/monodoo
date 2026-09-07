@@ -21,6 +21,8 @@ export class MonodooHome extends Component {
         this.menuService = useService("menu");
         this.orm = useService("orm");
         this.recentStorageKey = getRecentStorageKey(session.db, user.userId);
+        this.favoriteSaveQueue = Promise.resolve();
+        this.favoriteSaveGeneration = 0;
         this.state = useState({
             query: "",
             favoriteXmlids: [],
@@ -89,23 +91,35 @@ export class MonodooHome extends Component {
         const next = this.isFavorite(app)
             ? previous.filter((xmlid) => xmlid !== app.xmlid)
             : [...previous, app.xmlid];
+        const generation = ++this.favoriteSaveGeneration;
         this.state.favoriteXmlids = next;
-        try {
-            const saved = await this.orm.call(
-                "res.users",
-                "set_monodoo_favorite_apps",
-                [next]
-            );
-            if (Array.isArray(saved)) {
-                this.state.favoriteXmlids = saved;
+
+        const save = async () => {
+            try {
+                const saved = await this.orm.call(
+                    "res.users",
+                    "set_monodoo_favorite_apps",
+                    [next]
+                );
+                if (
+                    generation === this.favoriteSaveGeneration &&
+                    Array.isArray(saved)
+                ) {
+                    this.state.favoriteXmlids = saved;
+                }
+            } catch (error) {
+                if (generation === this.favoriteSaveGeneration) {
+                    this.state.favoriteXmlids = previous;
+                }
+                browser.console.warn(
+                    "Monodoo Home could not save favorite applications",
+                    error
+                );
             }
-        } catch (error) {
-            this.state.favoriteXmlids = previous;
-            browser.console.warn(
-                "Monodoo Home could not save favorite applications",
-                error
-            );
-        }
+        };
+
+        this.favoriteSaveQueue = this.favoriteSaveQueue.then(save, save);
+        return this.favoriteSaveQueue;
     }
 
     trackRecent(app) {
