@@ -40,26 +40,32 @@ jobs:
       - name: E2E Home release gate
         run: pytest tests/e2e/test_home.py -vv -s --maxfail=1
       - name: Mobile diagnostic - neutral Home
+        if: always()
         id: mobile_home
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_neutral_home_is_visible -vv -s
       - name: Mobile diagnostic - Project card
+        if: always()
         id: mobile_project_card
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_project_card_is_visible -vv -s
       - name: Mobile diagnostic - menu toggle
+        if: always()
         id: mobile_toggle
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_project_exposes_standard_menu_toggle -vv -s
       - name: Mobile diagnostic - sidebar topbar
+        if: always()
         id: mobile_topbar
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_menu_toggle_exposes_sidebar_topbar -vv -s
       - name: Mobile diagnostic - Home app entry
+        if: always()
         id: mobile_home_entry
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_sidebar_topbar_exposes_home_app -vv -s
       - name: Mobile diagnostic - return Home
+        if: always()
         id: mobile_return_home
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_home_app_returns_to_monodoo_home -vv -s
