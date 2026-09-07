@@ -1,0 +1,36 @@
+.o_web_client {
+    .o_dialog .modal-content {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+        border-radius: var(--monodoo-radius-lg);
+        box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 16%);
+    }
+
+    .o_dialog .modal-header,
+    .o_dialog .modal-footer {
+        border-color: var(--monodoo-border);
+    }
+
+    .o_dialog .modal-title,
+    .o_dialog .modal-body {
+        color: var(--monodoo-text);
+    }
+
+    .o_dialog .btn {
+        border-radius: var(--monodoo-radius-sm);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .o_web_client .o_dialog .modal-dialog {
+        width: auto;
+        max-width: calc(100vw - 1rem);
+        margin: 0.5rem auto;
+    }
+
+    .o_web_client .o_dialog .modal-content {
+        max-height: calc(100vh - 1rem);
+        border-radius: var(--monodoo-radius-md);
+    }
+}

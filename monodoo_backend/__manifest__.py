@@ -1,0 +1,21 @@
+{
+    "name": "Monodoo Backend",
+    "summary": "Install the complete stable Monodoo backend experience",
+    "version": "19.0.1.0.0",
+    "category": "Productivity",
+    "author": "Marcelo Santos",
+    "website": "https://github.com/marcelo-m7/monodoo",
+    "license": "LGPL-3",
+    "depends": [
+        "monodoo_core",
+        "monodoo_theme",
+        "monodoo_home",
+        "monodoo_appsbar",
+        "monodoo_views",
+        "monodoo_chatter",
+        "monodoo_dialog",
+    ],
+    "data": [],
+    "installable": True,
+    "application": False,
+}

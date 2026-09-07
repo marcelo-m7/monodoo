@@ -1,0 +1,31 @@
+.o_web_client {
+    .o-mail-Chatter {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o-mail-Chatter-top,
+    .o-mail-Chatter-content,
+    .o-mail-Composer {
+        border-color: var(--monodoo-border);
+    }
+
+    .o-mail-Message {
+        color: var(--monodoo-text);
+    }
+
+    .o-mail-Message-header,
+    .o-mail-Message-metadata,
+    .o-mail-Thread-empty {
+        color: var(--monodoo-muted);
+    }
+}
+
+@media (max-width: 991.98px) {
+    .o_web_client .o-mail-Chatter {
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+}

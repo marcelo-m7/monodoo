@@ -6,7 +6,16 @@ import unittest
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-ADDONS = ("monodoo_core", "monodoo_home", "monodoo_theme", "monodoo_appsbar")
+ADDONS = (
+    "monodoo_core",
+    "monodoo_home",
+    "monodoo_theme",
+    "monodoo_appsbar",
+    "monodoo_views",
+    "monodoo_chatter",
+    "monodoo_dialog",
+    "monodoo_backend",
+)
 
 
 def load_manifest(addon: str) -> dict:
@@ -48,6 +57,18 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertEqual(
             load_manifest("monodoo_appsbar")["depends"],
             ["web", "monodoo_core"],
+        )
+        self.assertEqual(
+            load_manifest("monodoo_views")["depends"],
+            ["web", "monodoo_core", "monodoo_theme"],
+        )
+        self.assertEqual(
+            load_manifest("monodoo_chatter")["depends"],
+            ["mail", "monodoo_core", "monodoo_theme"],
+        )
+        self.assertEqual(
+            load_manifest("monodoo_dialog")["depends"],
+            ["web", "monodoo_core", "monodoo_theme"],
         )
 
     def test_no_facodi_coupling(self):
@@ -199,16 +220,16 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn("_loadDefaultApp()", adapter)
         self.assertNotIn("loadRouterState()", adapter)
 
-    def test_runtime_installs_and_upgrades_navigation_addons(self):
+    def test_runtime_installs_and_upgrades_complete_backend_suite(self):
         path = ROOT / "tests" / "runtime" / "prepare_database.sh"
         self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
         source = path.read_text(encoding="utf-8")
         self.assertIn(
-            "-i monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar,crm,project",
+            "-i monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar,monodoo_views,monodoo_chatter,monodoo_dialog,monodoo_backend,crm,project",
             source,
         )
         self.assertIn(
-            "-u monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar",
+            "-u monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar,monodoo_views,monodoo_chatter,monodoo_dialog,monodoo_backend",
             source,
         )
 
@@ -216,6 +237,7 @@ class RepositoryContractTest(unittest.TestCase):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("repository-contract:", workflow)
         self.assertIn("python -m unittest tests.test_appsbar_contract -v", workflow)
+        self.assertIn("python -m unittest tests.test_backend_polish_contract -v", workflow)
         self.assertIn("node --experimental-default-type=module --test tests/test_theme_runtime.mjs", workflow)
         self.assertIn("node --experimental-default-type=module --test tests/test_navigation_state.mjs", workflow)
         self.assertIn("odoo-runtime:", workflow)
