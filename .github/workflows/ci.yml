@@ -73,19 +73,35 @@ jobs:
         id: mobile_return_home
         continue-on-error: true
         run: pytest tests/e2e/test_mobile_diagnostic.py::test_mobile_home_app_returns_to_monodoo_home -vv -s
-      - name: Enforce diagnostic results
+      - name: Enforce neutral Home result
         if: always()
-        run: |
-          test "${{ steps.e2e_home.outcome }}" = success
-          test "${{ steps.e2e_deep_link.outcome }}" = success
-          test "${{ steps.e2e_search.outcome }}" = success
-          test "${{ steps.e2e_desktop_menu.outcome }}" = success
-          test "${{ steps.e2e_restricted.outcome }}" = success
-          test "${{ steps.mobile_toggle.outcome }}" = success
-          test "${{ steps.mobile_topbar.outcome }}" = success
-          test "${{ steps.mobile_home_entry.outcome }}" = success
-          test "${{ steps.mobile_return_home.outcome }}" = success
+        run: test "${{ steps.e2e_home.outcome }}" = success
+      - name: Enforce deep link result
+        if: always()
+        run: test "${{ steps.e2e_deep_link.outcome }}" = success
+      - name: Enforce search result
+        if: always()
+        run: test "${{ steps.e2e_search.outcome }}" = success
+      - name: Enforce desktop menu result
+        if: always()
+        run: test "${{ steps.e2e_desktop_menu.outcome }}" = success
+      - name: Enforce restricted user result
+        if: always()
+        run: test "${{ steps.e2e_restricted.outcome }}" = success
+      - name: Enforce mobile toggle result
+        if: always()
+        run: test "${{ steps.mobile_toggle.outcome }}" = success
+      - name: Enforce mobile topbar result
+        if: always()
+        run: test "${{ steps.mobile_topbar.outcome }}" = success
+      - name: Enforce mobile Home entry result
+        if: always()
+        run: test "${{ steps.mobile_home_entry.outcome }}" = success
+      - name: Enforce mobile return Home result
+        if: always()
+        run: test "${{ steps.mobile_return_home.outcome }}" = success
       - name: Run Monodoo HOOT tests
+        if: always()
         run: timeout 90s pytest tests/e2e/test_hoot.py -vv -s --maxfail=1
       - if: always()
         run: cd tests/runtime && docker compose logs --no-color
