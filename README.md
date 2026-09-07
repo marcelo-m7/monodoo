@@ -2,12 +2,16 @@
 
 Monodoo is a reusable configuration and backend UX layer for **Odoo 19 Community**.
 
-The repository currently provides four generic addons:
+The repository currently provides eight generic addons:
 
 - `monodoo_core`: minimal technical base for independent Monodoo capabilities.
 - `monodoo_home`: Odoo-native Community Home/application launcher with favorites, recents, and local search.
 - `monodoo_theme`: inheritable backend identity engine with company selection, per-user light/dark/system mode, and semantic runtime CSS tokens.
 - `monodoo_appsbar`: responsive application sidebar built on Odoo's standard menu service.
+- `monodoo_views`: token-driven polish for standard form, list, kanban and backend control surfaces.
+- `monodoo_chatter`: responsive presentation layer for the standard Odoo Chatter.
+- `monodoo_dialog`: responsive presentation layer for standard Odoo dialogs.
+- `monodoo_backend`: meta-addon that installs the complete stable Monodoo backend suite.
 
 ## Compatibility
 
@@ -18,13 +22,9 @@ The repository currently provides four generic addons:
 
 Add this repository to the Odoo addons path and update the apps list.
 
-Install only the capabilities you need:
+Install only the capabilities you need, or install `monodoo_backend` to compose the complete stable backend suite.
 
-- `monodoo_home` for the neutral Home/application launcher;
-- `monodoo_theme` for hierarchical backend theme profiles;
-- `monodoo_appsbar` for persistent desktop application navigation.
-
-Each capability depends on `monodoo_core` automatically. `monodoo_appsbar` deliberately does **not** depend on `monodoo_theme`; when both are installed the sidebar consumes the shared CSS custom properties naturally, while remaining usable with neutral Odoo-compatible fallbacks on its own.
+The presentation addons remain intentionally modular. `monodoo_appsbar` deliberately does **not** depend on `monodoo_theme`; when both are installed the sidebar consumes the shared CSS custom properties naturally, while remaining usable with neutral Odoo-compatible fallbacks on its own. `monodoo_views`, `monodoo_chatter`, and `monodoo_dialog` depend on `monodoo_theme` because their presentation contract is explicitly token-driven.
 
 After an internal user signs in, a neutral backend entry at `http://localhost:8069/odoo` opens the Monodoo Home. Valid Odoo deep links remain handled by the standard webclient.
 
@@ -95,6 +95,17 @@ The runtime exposes semantic variables such as:
 
 Product-specific repositories should define child profiles instead of adding product branding to Monodoo itself. A website-theme companion module can therefore depend on `monodoo_theme`, create a child `monodoo.theme.profile`, and map the website identity into backend tokens without coupling Monodoo to that product. The dedicated Website-to-Backend provider bridge remains a later capability.
 
+## Backend polish
+
+Phase 3A keeps the standard Odoo components and adds presentation only:
+
+- `monodoo_views` aligns form sheets, list tables, kanban records, controls and keyboard-focus states with semantic theme tokens;
+- `monodoo_chatter` styles the existing `mail.Chatter` surface and keeps it usable on narrower screens;
+- `monodoo_dialog` styles the existing Odoo dialog/modal surface and adds conservative small-screen sizing;
+- `monodoo_backend` installs the stable suite through dependencies only and contains no runtime implementation of its own.
+
+These addons do not replace Form/List/Kanban controllers or renderers, do not fork Chatter/Dialog Owl components, and do not introduce custom `/odoo` routing or controllers. Branding assets, user density preferences, command palette/quick actions, and Website-to-Backend synchronization remain separate later slices.
+
 ## Verification
 
 Fast repository contracts and dependency-free engine tests:
@@ -105,6 +116,7 @@ python3 -m unittest tests.test_theme_tokens -v
 python3 -m unittest tests.test_navigation_models -v
 python3 -m unittest tests.test_home_navigation_contract -v
 python3 -m unittest tests.test_appsbar_contract -v
+python3 -m unittest tests.test_backend_polish_contract -v
 node --experimental-default-type=module --test tests/test_theme_runtime.mjs
 node --experimental-default-type=module --test tests/test_navigation_state.mjs
 ```
@@ -121,7 +133,7 @@ pytest tests/e2e -q
 cd tests/runtime && docker compose down -v --remove-orphans
 ```
 
-The runtime suite performs a fresh install and upgrade of `monodoo_core`, `monodoo_home`, `monodoo_theme`, and `monodoo_appsbar`, executes the installed HOOT tests, and verifies authenticated desktop/mobile navigation, permissions, local search, deep-link preservation, theme assets, favorites/recents behavior, and AppsBar menu-service integration.
+The runtime suite performs a fresh install and upgrade of the complete stable Monodoo backend suite, executes the installed HOOT tests, and verifies authenticated desktop/mobile navigation, permissions, local search, deep-link preservation, theme assets, favorites/recents behavior, and AppsBar menu-service integration.
 
 ## Repository boundary
 
@@ -133,3 +145,5 @@ Design and implementation documents:
 - `docs/superpowers/plans/2026-09-07-monodoo-theme-hierarchy-implementation.md`
 - `docs/superpowers/specs/2026-09-07-monodoo-navigation-design.md`
 - `docs/superpowers/plans/2026-09-07-monodoo-navigation-implementation.md`
+- `docs/superpowers/specs/2026-09-07-monodoo-backend-polish-design.md`
+- `docs/superpowers/plans/2026-09-07-monodoo-backend-polish-implementation.md`
