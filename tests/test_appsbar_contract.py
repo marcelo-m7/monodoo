@@ -28,6 +28,12 @@ class AppsBarContractTest(unittest.TestCase):
         self.assertIn("SELF_READABLE_FIELDS", source)
         self.assertIn("SELF_WRITEABLE_FIELDS", source)
 
+    def test_sidebar_preference_is_available_to_admins_and_the_current_user(self):
+        xml = (ROOT / "monodoo_appsbar" / "views" / "res_users.xml").read_text(encoding="utf-8")
+        self.assertIn('ref="base.view_users_form"', xml)
+        self.assertIn('ref="base.view_users_form_simple_modif"', xml)
+        self.assertGreaterEqual(xml.count('name="monodoo_sidebar_mode"'), 2)
+
     def test_webclient_extension_preserves_navbar(self):
         js = (ROOT / "monodoo_appsbar" / "static" / "src" / "webclient" / "webclient.js").read_text(encoding="utf-8")
         xml = (ROOT / "monodoo_appsbar" / "static" / "src" / "webclient" / "webclient.xml").read_text(encoding="utf-8")
