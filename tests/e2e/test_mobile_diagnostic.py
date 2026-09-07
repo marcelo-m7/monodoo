@@ -18,6 +18,37 @@ def open_mobile_project(page: Page) -> None:
     app_card(page, "Project").click()
 
 
+def mobile_nav_state(page: Page) -> dict:
+    return page.locator("a.o_menu_toggle").evaluate(
+        """
+        (element) => {
+            const chain = [];
+            let current = element;
+            while (current && chain.length < 8) {
+                const style = getComputedStyle(current);
+                const rect = current.getBoundingClientRect();
+                chain.push({
+                    tag: current.tagName,
+                    className: typeof current.className === "string" ? current.className : "",
+                    display: style.display,
+                    visibility: style.visibility,
+                    opacity: style.opacity,
+                    width: rect.width,
+                    height: rect.height,
+                    x: rect.x,
+                    y: rect.y,
+                });
+                current = current.parentElement;
+            }
+            return {
+                viewport: { width: window.innerWidth, height: window.innerHeight },
+                chain,
+            };
+        }
+        """
+    )
+
+
 def test_mobile_neutral_home_is_visible(page: Page) -> None:
     open_mobile_home(page)
     expect(page.locator(".o_monodoo_home")).to_be_visible()
@@ -30,6 +61,7 @@ def test_mobile_project_card_is_visible(page: Page) -> None:
 
 def test_mobile_project_exposes_standard_menu_toggle(page: Page) -> None:
     open_mobile_project(page)
+    print(f"MOBILE_NAV_STATE={mobile_nav_state(page)!r}")
     expect(page.locator("a.o_menu_toggle")).to_be_visible()
 
 
