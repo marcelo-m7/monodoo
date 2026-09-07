@@ -95,6 +95,42 @@ test("favorite toggle persists through the res.users preference method", async (
 });
 
 test.tags("monodoo");
+test("serializes rapid favorite writes so the latest choice wins", async () => {
+    const component = await mountWithCleanup(MonodooHome);
+    const pending = [];
+    patchWithCleanup(component.orm, {
+        call(model, method, args) {
+            if (model === "res.users" && method === "set_monodoo_favorite_apps") {
+                const values = [...args[0]];
+                expect.step(`begin ${values.join(",")}`);
+                return new Promise((resolve) => pending.push({ resolve, values }));
+            }
+            return {};
+        },
+    });
+
+    const [crm, project] = component.businessApps;
+    const firstSave = component.toggleFavorite(crm);
+    const secondSave = component.toggleFavorite(project);
+    await animationFrame();
+
+    expect.verifySteps(["begin crm.crm_menu_root"]);
+    pending.shift().resolve(["crm.crm_menu_root"]);
+    await firstSave;
+    await animationFrame();
+
+    expect.verifySteps(["begin crm.crm_menu_root,project.menu_main_pm"]);
+    pending.shift().resolve(["crm.crm_menu_root", "project.menu_main_pm"]);
+    await secondSave;
+    await animationFrame();
+
+    expect(component.state.favoriteXmlids).toEqual([
+        "crm.crm_menu_root",
+        "project.menu_main_pm",
+    ]);
+});
+
+test.tags("monodoo");
 test("renders recent applications in most-recent order and excludes Home", async () => {
     const component = await mountWithCleanup(MonodooHome);
     component.state.recentXmlids = [
