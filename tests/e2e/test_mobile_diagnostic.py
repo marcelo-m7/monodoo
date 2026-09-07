@@ -6,13 +6,26 @@ from tests.e2e.helpers import BASE_URL, login
 from tests.e2e.test_home import app_card
 
 
-def open_mobile_project(page: Page) -> None:
-    page.set_default_timeout(5_000)
+def open_mobile_home(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     login(page, "admin", "admin")
     page.goto(f"{BASE_URL}/odoo", wait_until="domcontentloaded")
+
+
+def open_mobile_project(page: Page) -> None:
+    open_mobile_home(page)
     page.locator(".o_monodoo_home").wait_for(state="visible")
     app_card(page, "Project").click()
+
+
+def test_mobile_neutral_home_is_visible(page: Page) -> None:
+    open_mobile_home(page)
+    expect(page.locator(".o_monodoo_home")).to_be_visible()
+
+
+def test_mobile_project_card_is_visible(page: Page) -> None:
+    open_mobile_home(page)
+    expect(app_card(page, "Project")).to_be_visible()
 
 
 def test_mobile_project_exposes_standard_menu_toggle(page: Page) -> None:
