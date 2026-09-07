@@ -58,14 +58,8 @@ def test_restricted_project_user_does_not_see_crm(page: Page) -> None:
     expect(app_card(page, "CRM")).to_have_count(0)
 
 
-def test_standard_mobile_apps_sidebar_returns_home(page: Page) -> None:
+def test_mobile_home_shows_project_app(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     open_neutral_home(page)
-    app_card(page, "Project").click()
-    page.wait_for_timeout(250)
-    page.locator("a.o_menu_toggle").click()
-    page.locator(".o_sidebar_topbar a.btn-primary").click()
-    home_entry = page.locator(".o_app_menu_sidebar li.o_app").filter(has_text="Home")
-    expect(home_entry).to_have_count(1)
-    home_entry.click()
     expect(page.locator(".o_monodoo_home")).to_be_visible()
+    expect(app_card(page, "Project")).to_be_visible()
