@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 from pathlib import Path
 import unittest
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN_MODULE_PATH = ROOT / "monodoo_theme" / "lib" / "theme_tokens.py"
@@ -62,6 +64,34 @@ class ThemeTokenTest(unittest.TestCase):
             ("font_family", "radius_sm", "radius_md", "radius_lg"),
         )
         self.assertEqual(theme_tokens.THEME_MODES, ("light", "dark"))
+
+    def test_brand_theme_presets_are_installed_and_complete(self):
+        manifest = ast.literal_eval((ROOT / "monodoo_theme" / "__manifest__.py").read_text())
+        self.assertIn("data/brand_theme_presets.xml", manifest["data"])
+
+        preset_path = ROOT / "monodoo_theme" / "data" / "brand_theme_presets.xml"
+        self.assertTrue(preset_path.exists())
+        root = ET.parse(preset_path).getroot()
+        records = root.findall(".//record[@model='monodoo.theme.profile']")
+        by_key = {
+            record.find("field[@name='key']").text: record
+            for record in records
+            if record.find("field[@name='key']") is not None
+        }
+
+        expected_keys = {"open2-tech", "o2-tube", "facodi", "monynha-softwares"}
+        self.assertEqual(expected_keys, set(by_key))
+
+        required_fields = {
+            *(f"{mode}_{token}" for mode in ("light", "dark") for token in theme_tokens.COLOR_TOKENS),
+            *theme_tokens.COMMON_TOKENS,
+        }
+        for key, record in by_key.items():
+            field_names = {field.attrib.get("name") for field in record.findall("field")}
+            self.assertTrue(required_fields <= field_names, f"{key} is missing theme tokens")
+            parent = record.find("field[@name='parent_id']")
+            self.assertIsNotNone(parent, f"{key} should inherit from Monodoo Default")
+            self.assertEqual(parent.attrib.get("ref"), "monodoo_theme.theme_default")
 
 
 if __name__ == "__main__":

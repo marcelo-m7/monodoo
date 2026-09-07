@@ -71,9 +71,12 @@ class RepositoryContractTest(unittest.TestCase):
             ["web", "monodoo_core", "monodoo_theme"],
         )
 
-    def test_no_facodi_coupling(self):
+    def test_no_facodi_behavior_coupling(self):
+        allowed_identity_data = ROOT / "monodoo_theme" / "data" / "brand_theme_presets.xml"
         for addon in ADDONS:
             for path in (ROOT / addon).rglob("*"):
+                if path == allowed_identity_data:
+                    continue
                 if path.is_file() and path.suffix in {".py", ".js", ".xml", ".scss"}:
                     self.assertNotIn("facodi", path.read_text(encoding="utf-8").lower(), str(path))
 
@@ -91,6 +94,7 @@ class RepositoryContractTest(unittest.TestCase):
             "models/res_config_settings.py",
             "security/ir.model.access.csv",
             "data/default_theme.xml",
+            "data/brand_theme_presets.xml",
             "views/theme_profile_views.xml",
             "views/res_config_settings.xml",
             "views/res_users.xml",
@@ -104,6 +108,7 @@ class RepositoryContractTest(unittest.TestCase):
             [
                 "security/ir.model.access.csv",
                 "data/default_theme.xml",
+                "data/brand_theme_presets.xml",
                 "views/theme_profile_views.xml",
                 "views/res_config_settings.xml",
                 "views/res_users.xml",

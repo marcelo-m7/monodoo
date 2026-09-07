@@ -6,7 +6,7 @@ The repository currently provides eight generic addons:
 
 - `monodoo_core`: minimal technical base for independent Monodoo capabilities.
 - `monodoo_home`: Odoo-native Community Home/application launcher with favorites, recents, and local search.
-- `monodoo_theme`: inheritable backend identity engine with company selection, per-user light/dark/system mode, and semantic runtime CSS tokens.
+- `monodoo_theme`: inheritable backend identity engine with company selection, per-user light/dark/system mode, semantic runtime CSS tokens, and reusable identity presets.
 - `monodoo_appsbar`: responsive application sidebar built on Odoo's standard menu service.
 - `monodoo_views`: token-driven polish for standard form, list, kanban and backend control surfaces.
 - `monodoo_chatter`: responsive presentation layer for the standard Odoo Chatter.
@@ -55,7 +55,7 @@ The current application is highlighted using Odoo's `getCurrentApp()` state and 
 
 ## Theme hierarchy
 
-`monodoo_theme` treats visual identity as data rather than a hard-coded backend skin. Theme profiles form a parent/child hierarchy: a child only needs to store the semantic tokens it overrides, while unresolved values are inherited from its ancestors.
+`monodoo_theme` treats visual identity as data rather than a hard-coded backend skin. Theme profiles form a parent/child hierarchy: a child can override semantic tokens while unresolved values are inherited from its ancestors.
 
 The resolution order is:
 
@@ -72,6 +72,16 @@ effective runtime CSS custom properties
 ```
 
 A company chooses its backend theme under **Settings → General Settings → Monodoo**. Internal users can choose whether that identity is rendered in system, light, or dark mode from their user preferences. User preferences do not replace the company's institutional identity.
+
+`monodoo_theme` ships with a neutral default plus four selectable ecosystem presets. Each preset provides complete light/dark semantic tokens while still inheriting from the default profile so future shared defaults remain composable:
+
+| Preset | Intent |
+| --- | --- |
+| `Monodoo Default` | Neutral Odoo-compatible baseline. |
+| `Open2 Tech` | Clean technical/corporate identity inspired by the Open2 Tech ecosystem. |
+| `O2 Tube` | Media-first, high-contrast identity inspired by O2 Tube. |
+| `FACODI` | Community-learning identity using FACODI's ink/cyan/blue/mint/sun visual language. |
+| `Monynha Softwares` | Product-studio identity for the wider Monynha ecosystem. |
 
 The runtime exposes semantic variables such as:
 
@@ -93,7 +103,7 @@ The runtime exposes semantic variables such as:
 --monodoo-radius-lg
 ```
 
-Product-specific repositories should define child profiles instead of adding product branding to Monodoo itself. A website-theme companion module can therefore depend on `monodoo_theme`, create a child `monodoo.theme.profile`, and map the website identity into backend tokens without coupling Monodoo to that product. The dedicated Website-to-Backend provider bridge remains a later capability.
+Additional deployments can define more child profiles without changing the backend engine. A website-theme companion module can depend on `monodoo_theme`, create a child `monodoo.theme.profile`, and map a website identity into backend tokens. The dedicated Website-to-Backend provider bridge remains a later capability.
 
 ## Backend polish
 
@@ -137,7 +147,7 @@ The runtime suite performs a fresh install and upgrade of the complete stable Mo
 
 ## Repository boundary
 
-Monodoo is generic and contains no FACODI-specific behavior. Product/deployment repositories may consume released Monodoo addons, but deployment integration and product-specific theme companions belong outside this repository.
+Monodoo keeps product behavior outside the generic backend engine. The bundled theme presets are reusable identity data only: they add no FACODI, Open2, O2 Tube, or Monynha business logic. Deployment integrations, website-specific components, and product workflows remain in their respective repositories.
 
 Design and implementation documents:
 

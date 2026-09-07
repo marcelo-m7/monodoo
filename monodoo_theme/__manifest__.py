@@ -10,6 +10,7 @@
     "data": [
         "security/ir.model.access.csv",
         "data/default_theme.xml",
+        "data/brand_theme_presets.xml",
         "views/theme_profile_views.xml",
         "views/res_config_settings.xml",
         "views/res_users.xml",

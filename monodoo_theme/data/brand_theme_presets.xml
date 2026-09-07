@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="theme_open2_tech" model="monodoo.theme.profile">
+        <field name="name">Open2 Tech</field>
+        <field name="key">open2-tech</field>
+        <field name="description">Clean technical identity inspired by the Open2 Tech ecosystem.</field>
+        <field name="parent_id" ref="monodoo_theme.theme_default"/>
+        <field name="light_brand">#155EEF</field>
+        <field name="light_primary">#155EEF</field>
+        <field name="light_accent">#12B76A</field>
+        <field name="light_background">#F8FAFC</field>
+        <field name="light_surface">#FFFFFF</field>
+        <field name="light_text">#101828</field>
+        <field name="light_muted">#667085</field>
+        <field name="light_border">#D0D5DD</field>
+        <field name="light_success">#12B76A</field>
+        <field name="light_warning">#F79009</field>
+        <field name="light_danger">#F04438</field>
+        <field name="dark_brand">#84ADFF</field>
+        <field name="dark_primary">#528BFF</field>
+        <field name="dark_accent">#32D583</field>
+        <field name="dark_background">#0C111D</field>
+        <field name="dark_surface">#161B26</field>
+        <field name="dark_text">#F2F4F7</field>
+        <field name="dark_muted">#98A2B3</field>
+        <field name="dark_border">#344054</field>
+        <field name="dark_success">#32D583</field>
+        <field name="dark_warning">#FDB022</field>
+        <field name="dark_danger">#F97066</field>
+        <field name="font_family">Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif</field>
+        <field name="radius_sm">0.375rem</field>
+        <field name="radius_md">0.625rem</field>
+        <field name="radius_lg">0.875rem</field>
+    </record>
+
+    <record id="theme_o2_tube" model="monodoo.theme.profile">
+        <field name="name">O2 Tube</field>
+        <field name="key">o2-tube</field>
+        <field name="description">Media-first identity inspired by O2 Tube, with high-contrast surfaces and vivid playback accents.</field>
+        <field name="parent_id" ref="monodoo_theme.theme_default"/>
+        <field name="light_brand">#7C3AED</field>
+        <field name="light_primary">#6D28D9</field>
+        <field name="light_accent">#EC4899</field>
+        <field name="light_background">#F7F7FB</field>
+        <field name="light_surface">#FFFFFF</field>
+        <field name="light_text">#18181B</field>
+        <field name="light_muted">#71717A</field>
+        <field name="light_border">#E4E4E7</field>
+        <field name="light_success">#16A34A</field>
+        <field name="light_warning">#D97706</field>
+        <field name="light_danger">#DC2626</field>
+        <field name="dark_brand">#A78BFA</field>
+        <field name="dark_primary">#8B5CF6</field>
+        <field name="dark_accent">#F472B6</field>
+        <field name="dark_background">#09090B</field>
+        <field name="dark_surface">#18181B</field>
+        <field name="dark_text">#FAFAFA</field>
+        <field name="dark_muted">#A1A1AA</field>
+        <field name="dark_border">#3F3F46</field>
+        <field name="dark_success">#4ADE80</field>
+        <field name="dark_warning">#FBBF24</field>
+        <field name="dark_danger">#F87171</field>
+        <field name="font_family">Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif</field>
+        <field name="radius_sm">0.5rem</field>
+        <field name="radius_md">0.75rem</field>
+        <field name="radius_lg">1rem</field>
+    </record>
+
+    <record id="theme_facodi" model="monodoo.theme.profile">
+        <field name="name">FACODI</field>
+        <field name="key">facodi</field>
+        <field name="description">Community learning identity inspired by FACODI, using ink, cyan, blue, mint and sun accents.</field>
+        <field name="parent_id" ref="monodoo_theme.theme_default"/>
+        <field name="light_brand">#142846</field>
+        <field name="light_primary">#3979C8</field>
+        <field name="light_accent">#37BED2</field>
+        <field name="light_background">#F9FAFB</field>
+        <field name="light_surface">#FFFFFF</field>
+        <field name="light_text">#142846</field>
+        <field name="light_muted">#5D6B7E</field>
+        <field name="light_border">#CAD4DF</field>
+        <field name="light_success">#38A169</field>
+        <field name="light_warning">#D69E2E</field>
+        <field name="light_danger">#D64545</field>
+        <field name="dark_brand">#37BED2</field>
+        <field name="dark_primary">#6FA8EC</field>
+        <field name="dark_accent">#EFFF00</field>
+        <field name="dark_background">#0B1626</field>
+        <field name="dark_surface">#142846</field>
+        <field name="dark_text">#F9FAFB</field>
+        <field name="dark_muted">#AFC4D8</field>
+        <field name="dark_border">#31516F</field>
+        <field name="dark_success">#A7E8BE</field>
+        <field name="dark_warning">#F4D35E</field>
+        <field name="dark_danger">#FF7B7B</field>
+        <field name="font_family">Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif</field>
+        <field name="radius_sm">0.25rem</field>
+        <field name="radius_md">0.5rem</field>
+        <field name="radius_lg">0.75rem</field>
+    </record>
+
+    <record id="theme_monynha_softwares" model="monodoo.theme.profile">
+        <field name="name">Monynha Softwares</field>
+        <field name="key">monynha-softwares</field>
+        <field name="description">Warm product-studio identity for the wider Monynha Softwares ecosystem.</field>
+        <field name="parent_id" ref="monodoo_theme.theme_default"/>
+        <field name="light_brand">#4F46E5</field>
+        <field name="light_primary">#4F46E5</field>
+        <field name="light_accent">#06B6D4</field>
+        <field name="light_background">#F8FAFC</field>
+        <field name="light_surface">#FFFFFF</field>
+        <field name="light_text">#172033</field>
+        <field name="light_muted">#64748B</field>
+        <field name="light_border">#D8E0EA</field>
+        <field name="light_success">#10B981</field>
+        <field name="light_warning">#F59E0B</field>
+        <field name="light_danger">#EF4444</field>
+        <field name="dark_brand">#818CF8</field>
+        <field name="dark_primary">#818CF8</field>
+        <field name="dark_accent">#22D3EE</field>
+        <field name="dark_background">#0F172A</field>
+        <field name="dark_surface">#172033</field>
+        <field name="dark_text">#F8FAFC</field>
+        <field name="dark_muted">#A8B3C7</field>
+        <field name="dark_border">#334155</field>
+        <field name="dark_success">#34D399</field>
+        <field name="dark_warning">#FBBF24</field>
+        <field name="dark_danger">#FB7185</field>
+        <field name="font_family">Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif</field>
+        <field name="radius_sm">0.375rem</field>
+        <field name="radius_md">0.625rem</field>
+        <field name="radius_lg">0.875rem</field>
+    </record>
+</odoo>
