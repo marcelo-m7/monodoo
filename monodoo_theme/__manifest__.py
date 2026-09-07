@@ -1,7 +1,7 @@
 {
     "name": "Monodoo Theme",
     "summary": "Inheritable backend theme engine for Odoo Community",
-    "version": "19.0.1.1.0",
+    "version": "19.0.1.0.0",
     "category": "Themes/Backend",
     "author": "Marcelo Santos",
     "website": "https://github.com/marcelo-m7/monodoo",
