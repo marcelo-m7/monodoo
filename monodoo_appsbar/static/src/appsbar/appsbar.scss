@@ -1,0 +1,117 @@
+.o_monodoo_appsbar {
+    position: absolute;
+    top: 46px;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    width: 13rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--monodoo-surface, #fff);
+    color: var(--monodoo-text, #212529);
+    border-right: 1px solid var(--monodoo-border, #dee2e6);
+    transition: width 140ms ease;
+}
+
+.o_monodoo_appsbar_link {
+    min-height: 3rem;
+    padding: 0.45rem 0.65rem;
+    color: var(--monodoo-text, #212529);
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--monodoo-text, #212529);
+        background: color-mix(in srgb, var(--monodoo-primary, #71639e) 8%, transparent);
+    }
+}
+
+.o_monodoo_appsbar_item.active .o_monodoo_appsbar_link {
+    color: var(--monodoo-primary, #71639e);
+    background: color-mix(in srgb, var(--monodoo-primary, #71639e) 12%, transparent);
+    box-shadow: inset 3px 0 0 var(--monodoo-primary, #71639e);
+}
+
+.o_monodoo_appsbar_icon,
+.o_monodoo_appsbar_fallback_icon {
+    flex: 0 0 2rem;
+    width: 2rem;
+    height: 2rem;
+}
+
+.o_monodoo_appsbar_icon {
+    object-fit: contain;
+}
+
+.o_monodoo_appsbar_fallback_icon {
+    color: var(--monodoo-muted, #6c757d);
+}
+
+.o_monodoo_appsbar_name {
+    min-width: 0;
+    font-weight: 500;
+}
+
+.o_monodoo_appsbar_mode_compact {
+    width: 4rem;
+
+    .o_monodoo_appsbar_link {
+        justify-content: center;
+        padding-inline: 0.5rem;
+    }
+
+    .o_monodoo_appsbar_name {
+        display: none;
+    }
+}
+
+.o_monodoo_appsbar_mode_hidden {
+    display: none;
+}
+
+.o_web_client:has(> .o_monodoo_appsbar_mode_expanded) > .o_action_manager {
+    margin-inline-start: 13rem;
+}
+
+.o_web_client:has(> .o_monodoo_appsbar_mode_compact) > .o_action_manager {
+    margin-inline-start: 4rem;
+}
+
+.o_monodoo_appsbar_mode_auto {
+    width: 13rem;
+}
+
+.o_web_client:has(> .o_monodoo_appsbar_mode_auto) > .o_action_manager {
+    margin-inline-start: 13rem;
+}
+
+@media (max-width: 1199.98px) {
+    .o_monodoo_appsbar_mode_auto {
+        width: 4rem;
+
+        .o_monodoo_appsbar_link {
+            justify-content: center;
+            padding-inline: 0.5rem;
+        }
+
+        .o_monodoo_appsbar_name {
+            display: none;
+        }
+    }
+
+    .o_web_client:has(> .o_monodoo_appsbar_mode_auto) > .o_action_manager {
+        margin-inline-start: 4rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .o_monodoo_appsbar_mode_auto {
+        display: none;
+    }
+
+    .o_web_client:has(> .o_monodoo_appsbar_mode_auto) > .o_action_manager {
+        margin-inline-start: 0;
+    }
+}
