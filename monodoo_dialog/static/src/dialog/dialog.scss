@@ -4,7 +4,7 @@
         color: var(--monodoo-text);
         border-color: var(--monodoo-border);
         border-radius: var(--monodoo-radius-lg);
-        box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 16%);
+        box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.16);
     }
 
     .o_dialog .modal-header,
