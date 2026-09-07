@@ -2,11 +2,12 @@
 
 Monodoo is a reusable configuration and backend UX layer for **Odoo 19 Community**.
 
-The repository currently provides three generic addons:
+The repository currently provides four generic addons:
 
 - `monodoo_core`: minimal technical base for independent Monodoo capabilities.
-- `monodoo_home`: Odoo-native Community Home/application launcher.
+- `monodoo_home`: Odoo-native Community Home/application launcher with favorites, recents, and local search.
 - `monodoo_theme`: inheritable backend identity engine with company selection, per-user light/dark/system mode, and semantic runtime CSS tokens.
+- `monodoo_appsbar`: responsive application sidebar built on Odoo's standard menu service.
 
 ## Compatibility
 
@@ -17,15 +18,46 @@ The repository currently provides three generic addons:
 
 Add this repository to the Odoo addons path and update the apps list.
 
-Install `monodoo_home` for the neutral application launcher. Install `monodoo_theme` when you also want backend theme profiles. Both install `monodoo_core` automatically through their declared dependencies.
+Install only the capabilities you need:
+
+- `monodoo_home` for the neutral Home/application launcher;
+- `monodoo_theme` for hierarchical backend theme profiles;
+- `monodoo_appsbar` for persistent desktop application navigation.
+
+Each capability depends on `monodoo_core` automatically. `monodoo_appsbar` deliberately does **not** depend on `monodoo_theme`; when both are installed the sidebar consumes the shared CSS custom properties naturally, while remaining usable with neutral Odoo-compatible fallbacks on its own.
 
 After an internal user signs in, a neutral backend entry at `http://localhost:8069/odoo` opens the Monodoo Home. Valid Odoo deep links remain handled by the standard webclient.
+
+## Home navigation
+
+The Home continues to source applications from Odoo's existing menu service, so Odoo remains authoritative for ordering and access. Phase 2 adds three presentation layers without introducing another menu or security model:
+
+- **Favorites** are stored as a per-user presentation preference and sanitized against root applications the current user can actually access.
+- **Recent applications** are stored locally in the browser, isolated by database and user, deduplicated, and bounded to the six most recent applications.
+- **All applications** preserves the original authorized Odoo order and remains searchable entirely client-side.
+
+Selecting an application always delegates to `menuService.selectMenu(app)`. The Monodoo Home root menu is excluded from business-app favorites and recents.
+
+## AppsBar
+
+`monodoo_appsbar` adds application navigation beside the standard Odoo action area while leaving the standard navbar and mobile application flow intact. It reads the same authorized root applications already loaded by Odoo and never performs a `sudo()` menu lookup.
+
+Internal users can choose one of four sidebar modes from their user preferences:
+
+| Mode | Behavior |
+| --- | --- |
+| `Auto` | Expanded on wide desktops, compact on medium screens, hidden on mobile. |
+| `Expanded` | 13rem sidebar with application icon and name. |
+| `Compact` | 4rem icon-first sidebar with accessible application titles. |
+| `Hidden` | No Monodoo sidebar; standard Odoo navigation remains available. |
+
+The current application is highlighted using Odoo's `getCurrentApp()` state and all application changes are opened through the standard menu service.
 
 ## Theme hierarchy
 
 `monodoo_theme` treats visual identity as data rather than a hard-coded backend skin. Theme profiles form a parent/child hierarchy: a child only needs to store the semantic tokens it overrides, while unresolved values are inherited from its ancestors.
 
-The resolution order in the first release is:
+The resolution order is:
 
 ```text
 Monodoo default profile
@@ -65,12 +97,16 @@ Product-specific repositories should define child profiles instead of adding pro
 
 ## Verification
 
-Fast repository contracts and pure theme-engine tests:
+Fast repository contracts and dependency-free engine tests:
 
 ```bash
 python3 -m unittest tests.test_repository_contract -v
 python3 -m unittest tests.test_theme_tokens -v
+python3 -m unittest tests.test_navigation_models -v
+python3 -m unittest tests.test_home_navigation_contract -v
+python3 -m unittest tests.test_appsbar_contract -v
 node --experimental-default-type=module --test tests/test_theme_runtime.mjs
+node --experimental-default-type=module --test tests/test_navigation_state.mjs
 ```
 
 Full Odoo 19 Community acceptance:
@@ -85,10 +121,15 @@ pytest tests/e2e -q
 cd tests/runtime && docker compose down -v --remove-orphans
 ```
 
-The runtime suite performs a fresh install and upgrade, executes the installed HOOT unit tests, and verifies authenticated desktop/mobile navigation, permissions, local search, deep-link preservation, and the installed Monodoo theme assets.
+The runtime suite performs a fresh install and upgrade of `monodoo_core`, `monodoo_home`, `monodoo_theme`, and `monodoo_appsbar`, executes the installed HOOT tests, and verifies authenticated desktop/mobile navigation, permissions, local search, deep-link preservation, theme assets, favorites/recents behavior, and AppsBar menu-service integration.
 
 ## Repository boundary
 
 Monodoo is generic and contains no FACODI-specific behavior. Product/deployment repositories may consume released Monodoo addons, but deployment integration and product-specific theme companions belong outside this repository.
 
-See `docs/superpowers/specs/2026-09-05-monodoo-home-design.md` for the Home design and `docs/superpowers/plans/2026-09-07-monodoo-theme-hierarchy-implementation.md` for the Phase 1 theme-engine implementation plan.
+Design and implementation documents:
+
+- `docs/superpowers/specs/2026-09-05-monodoo-home-design.md`
+- `docs/superpowers/plans/2026-09-07-monodoo-theme-hierarchy-implementation.md`
+- `docs/superpowers/specs/2026-09-07-monodoo-navigation-design.md`
+- `docs/superpowers/plans/2026-09-07-monodoo-navigation-implementation.md`

@@ -18,7 +18,11 @@ jobs:
           python-version: "3.12"
       - run: python -m unittest tests.test_repository_contract -v
       - run: python -m unittest tests.test_theme_tokens -v
+      - run: python -m unittest tests.test_navigation_models -v
+      - run: python -m unittest tests.test_home_navigation_contract -v
+      - run: python -m unittest tests.test_appsbar_contract -v
       - run: node --experimental-default-type=module --test tests/test_theme_runtime.mjs
+      - run: node --experimental-default-type=module --test tests/test_navigation_state.mjs
 
   odoo-runtime:
     runs-on: ubuntu-latest

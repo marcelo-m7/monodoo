@@ -6,7 +6,7 @@ import unittest
 import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
-ADDONS = ("monodoo_core", "monodoo_home", "monodoo_theme")
+ADDONS = ("monodoo_core", "monodoo_home", "monodoo_theme", "monodoo_appsbar")
 
 
 def load_manifest(addon: str) -> dict:
@@ -44,6 +44,10 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertEqual(
             load_manifest("monodoo_theme")["depends"],
             ["base_setup", "web", "monodoo_core"],
+        )
+        self.assertEqual(
+            load_manifest("monodoo_appsbar")["depends"],
+            ["web", "monodoo_core"],
         )
 
     def test_no_facodi_coupling(self):
@@ -171,7 +175,9 @@ class RepositoryContractTest(unittest.TestCase):
         )
         for relative in (
             "data/home_action.xml",
+            "models/res_users.py",
             "static/src/home/constants.js",
+            "static/src/home/navigation_state.js",
             "static/src/home/home.js",
             "static/src/home/home.xml",
             "static/src/home/home.scss",
@@ -193,17 +199,25 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn("_loadDefaultApp()", adapter)
         self.assertNotIn("loadRouterState()", adapter)
 
-    def test_runtime_installs_and_upgrades_theme_engine(self):
+    def test_runtime_installs_and_upgrades_navigation_addons(self):
         path = ROOT / "tests" / "runtime" / "prepare_database.sh"
         self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))
         source = path.read_text(encoding="utf-8")
-        self.assertIn("-i monodoo_core,monodoo_home,monodoo_theme,crm,project", source)
-        self.assertIn("-u monodoo_core,monodoo_home,monodoo_theme", source)
+        self.assertIn(
+            "-i monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar,crm,project",
+            source,
+        )
+        self.assertIn(
+            "-u monodoo_core,monodoo_home,monodoo_theme,monodoo_appsbar",
+            source,
+        )
 
     def test_ci_declares_required_release_gates(self):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("repository-contract:", workflow)
+        self.assertIn("python -m unittest tests.test_appsbar_contract -v", workflow)
         self.assertIn("node --experimental-default-type=module --test tests/test_theme_runtime.mjs", workflow)
+        self.assertIn("node --experimental-default-type=module --test tests/test_navigation_state.mjs", workflow)
         self.assertIn("odoo-runtime:", workflow)
         self.assertIn("tests/runtime/prepare_database.sh", workflow)
         self.assertIn("pytest tests/e2e/test_home.py -vv -s --maxfail=1", workflow)
