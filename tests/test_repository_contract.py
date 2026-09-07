@@ -238,18 +238,15 @@ class RepositoryContractTest(unittest.TestCase):
             source,
         )
 
-    def test_ci_declares_required_release_gates(self):
+    def test_ci_declares_fast_contract_gates(self):
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
         self.assertIn("repository-contract:", workflow)
+        self.assertIn("python -m unittest tests.test_repository_contract -v", workflow)
         self.assertIn("python -m unittest tests.test_appsbar_contract -v", workflow)
         self.assertIn("python -m unittest tests.test_backend_polish_contract -v", workflow)
         self.assertIn("node --experimental-default-type=module --test tests/test_theme_runtime.mjs", workflow)
         self.assertIn("node --experimental-default-type=module --test tests/test_navigation_state.mjs", workflow)
-        self.assertIn("odoo-runtime:", workflow)
-        self.assertIn("tests/runtime/prepare_database.sh", workflow)
-        self.assertIn("pytest tests/e2e/test_home.py -vv -s --maxfail=1", workflow)
-        self.assertIn("timeout 90s pytest tests/e2e/test_hoot.py -vv -s --maxfail=1", workflow)
-        self.assertIn("timeout-minutes: 12", workflow)
+        self.assertNotIn("odoo-runtime:", workflow)
 
 
 if __name__ == "__main__":
