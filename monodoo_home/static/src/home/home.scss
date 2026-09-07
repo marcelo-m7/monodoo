@@ -1,13 +1,71 @@
+.o_monodoo_home {
+    background: var(--monodoo-background, #f8f9fa);
+    color: var(--monodoo-text, #212529);
+}
+
 .o_monodoo_home_inner {
-    max-width: 1100px;
+    max-width: 1180px;
+}
+
+.o_monodoo_search {
+    max-width: 24rem;
+    background-color: var(--monodoo-surface, #fff);
+    color: var(--monodoo-text, #212529);
+    border-color: var(--monodoo-border, #dee2e6);
+}
+
+.o_monodoo_section_title {
+    color: var(--monodoo-text, #212529);
+    font-weight: 600;
+}
+
+.o_monodoo_app_tile {
+    min-height: 7rem;
 }
 
 .o_monodoo_app_card {
     min-height: 7rem;
+    background: var(--monodoo-surface, #fff);
+    color: var(--monodoo-text, #212529);
+    border: 1px solid var(--monodoo-border, #dee2e6);
+    border-radius: var(--monodoo-radius-md, 0.375rem);
+    transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+
+    &:hover,
+    &:focus-visible {
+        color: var(--monodoo-text, #212529);
+        border-color: var(--monodoo-primary, #71639e);
+        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+        transform: translateY(-1px);
+    }
 
     .o_app_icon {
         width: 3rem;
         height: 3rem;
         object-fit: contain;
+    }
+}
+
+.o_monodoo_favorite_toggle {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    z-index: 1;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--monodoo-muted, #6c757d);
+    background: color-mix(in srgb, var(--monodoo-surface, #fff) 88%, transparent);
+    border: 1px solid transparent;
+    border-radius: 50%;
+
+    &:hover,
+    &:focus-visible,
+    &.is-favorite {
+        color: var(--monodoo-primary, #71639e);
+        border-color: var(--monodoo-border, #dee2e6);
     }
 }
