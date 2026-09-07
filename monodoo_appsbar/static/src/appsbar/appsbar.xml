@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="monodoo_appsbar.AppsBar">
+        <aside
+            t-attf-class="o_monodoo_appsbar o_monodoo_appsbar_mode_{{ state.mode }}"
+            aria-label="Applications"
+        >
+            <nav class="o_monodoo_appsbar_nav h-100" aria-label="Application navigation">
+                <ul class="o_monodoo_appsbar_list list-unstyled m-0 py-2">
+                    <li
+                        t-foreach="apps"
+                        t-as="app"
+                        t-key="app.id"
+                        t-attf-class="o_monodoo_appsbar_item {{ isActive(app) ? 'active' : '' }}"
+                    >
+                        <button
+                            type="button"
+                            class="o_monodoo_appsbar_link btn w-100 d-flex align-items-center gap-2"
+                            t-att-title="app.name"
+                            t-att-aria-current="isActive(app) ? 'page' : undefined"
+                            t-on-click="() => this.openApp(app)"
+                        >
+                            <img
+                                t-if="app.webIconData"
+                                class="o_monodoo_appsbar_icon"
+                                t-att-src="app.webIconData"
+                                t-att-alt="app.name"
+                            />
+                            <span t-else="" class="o_monodoo_appsbar_fallback_icon d-inline-flex align-items-center justify-content-center" aria-hidden="true">
+                                <i class="oi oi-apps"/>
+                            </span>
+                            <span class="o_monodoo_appsbar_name text-truncate" t-esc="app.name"/>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+    </t>
+</templates>
