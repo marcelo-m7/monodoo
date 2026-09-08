@@ -103,6 +103,16 @@ The runtime exposes semantic variables such as:
 --monodoo-radius-lg
 ```
 
+All standard backend surfaces consume the derived semantic roles from the same
+layer. Important roles include `--monodoo-bg`, `--monodoo-surface-alt`,
+`--monodoo-sidebar-bg`, `--monodoo-navbar-bg`, `--monodoo-input-bg`,
+`--monodoo-hover-bg`, `--monodoo-active-bg`, `--monodoo-selected-bg`,
+`--monodoo-text-muted`, `--monodoo-text-disabled`, `--monodoo-link`,
+`--monodoo-focus-ring`, `--monodoo-overlay`, and the success/warning/danger
+surface roles. These aliases resolve from the active identity tokens, so a
+new module using standard Odoo components inherits light and dark behavior
+without a Monodoo-specific stylesheet.
+
 Additional deployments can define more child profiles without changing the backend engine. A website-theme companion module can depend on `monodoo_theme`, create a child `monodoo.theme.profile`, and map a website identity into backend tokens. The dedicated Website-to-Backend provider bridge remains a later capability.
 
 ## Backend polish

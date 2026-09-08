@@ -102,7 +102,7 @@ class BackendPolishContractTest(unittest.TestCase):
         self.assertIn(".o-mail-Chatter", chatter_scss)
         self.assertIn(".o_dialog", dialog_scss)
 
-    def test_backend_scss_uses_sass_compatible_shadow_colors(self):
+    def test_backend_scss_uses_shared_shadow_tokens(self):
         scss_sources = (
             (ROOT / "monodoo_views/static/src/views/views.scss").read_text(encoding="utf-8"),
             (ROOT / "monodoo_dialog/static/src/dialog/dialog.scss").read_text(encoding="utf-8"),
@@ -110,9 +110,8 @@ class BackendPolishContractTest(unittest.TestCase):
         for source in scss_sources:
             self.assertNotIn("rgb(0 0 0 /", source)
             self.assertNotIn("rgb(0 0 0/", source)
-        self.assertIn("rgba(0, 0, 0, 0.16)", scss_sources[1])
-        self.assertIn("rgba(0, 0, 0, 0.06)", scss_sources[0])
-        self.assertIn("rgba(0, 0, 0, 0.05)", scss_sources[0])
+        self.assertIn("var(--monodoo-shadow-subtle)", scss_sources[0])
+        self.assertIn("var(--monodoo-shadow-raised)", scss_sources[1])
 
     def test_runtime_installs_and_upgrades_complete_suite(self):
         source = (ROOT / "tests/runtime/prepare_database.sh").read_text(encoding="utf-8")

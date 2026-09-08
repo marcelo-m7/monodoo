@@ -1,6 +1,6 @@
 .o_monodoo_home {
-    background: var(--monodoo-background, #f8f9fa);
-    color: var(--monodoo-text, #212529);
+    background: var(--monodoo-bg);
+    color: var(--monodoo-text);
 }
 
 .o_monodoo_home_inner {
@@ -9,13 +9,13 @@
 
 .o_monodoo_search {
     max-width: 24rem;
-    background-color: var(--monodoo-surface, #fff);
-    color: var(--monodoo-text, #212529);
-    border-color: var(--monodoo-border, #dee2e6);
+    background-color: var(--monodoo-input-bg);
+    color: var(--monodoo-text);
+    border-color: var(--monodoo-border);
 }
 
 .o_monodoo_section_title {
-    color: var(--monodoo-text, #212529);
+    color: var(--monodoo-text);
     font-weight: 600;
 }
 
@@ -25,17 +25,17 @@
 
 .o_monodoo_app_card {
     min-height: 7rem;
-    background: var(--monodoo-surface, #fff);
-    color: var(--monodoo-text, #212529);
-    border: 1px solid var(--monodoo-border, #dee2e6);
-    border-radius: var(--monodoo-radius-md, 0.375rem);
+    background: var(--monodoo-surface);
+    color: var(--monodoo-text);
+    border: 1px solid var(--monodoo-border);
+    border-radius: var(--monodoo-radius-md);
     transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 
     &:hover,
     &:focus-visible {
-        color: var(--monodoo-text, #212529);
-        border-color: var(--monodoo-primary, #71639e);
-        box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.08);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-primary);
+        box-shadow: var(--monodoo-shadow-subtle);
         transform: translateY(-1px);
     }
 
@@ -57,15 +57,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--monodoo-muted, #6c757d);
-    background: color-mix(in srgb, var(--monodoo-surface, #fff) 88%, transparent);
+    color: var(--monodoo-text-muted);
+    background: var(--monodoo-surface-alt);
     border: 1px solid transparent;
     border-radius: 50%;
 
     &:hover,
     &:focus-visible,
     &.is-favorite {
-        color: var(--monodoo-primary, #71639e);
-        border-color: var(--monodoo-border, #dee2e6);
+        color: var(--monodoo-primary);
+        border-color: var(--monodoo-border);
     }
 }

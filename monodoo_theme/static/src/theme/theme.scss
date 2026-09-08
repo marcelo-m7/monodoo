@@ -13,53 +13,521 @@
     --monodoo-radius-sm: 0.25rem;
     --monodoo-radius-md: 0.375rem;
     --monodoo-radius-lg: 0.5rem;
+    --monodoo-bg: var(--monodoo-background);
+    --monodoo-surface-alt: color-mix(in srgb, var(--monodoo-surface) 78%, var(--monodoo-background));
+    --monodoo-sidebar-bg: var(--monodoo-surface-alt);
+    --monodoo-navbar-bg: var(--monodoo-brand);
+    --monodoo-navbar-text: var(--monodoo-on-primary);
+    --monodoo-input-bg: var(--monodoo-surface);
+    --monodoo-hover-bg: color-mix(in srgb, var(--monodoo-primary) 10%, var(--monodoo-surface));
+    --monodoo-active-bg: color-mix(in srgb, var(--monodoo-primary) 15%, var(--monodoo-surface));
+    --monodoo-selected-bg: color-mix(in srgb, var(--monodoo-primary) 20%, var(--monodoo-surface));
+    --monodoo-text-muted: var(--monodoo-muted);
+    --monodoo-text-disabled: color-mix(in srgb, var(--monodoo-muted) 72%, var(--monodoo-background));
+    --monodoo-border-subtle: color-mix(in srgb, var(--monodoo-border) 68%, transparent);
+    --monodoo-link: var(--monodoo-primary);
+    --monodoo-link-hover: color-mix(in srgb, var(--monodoo-primary) 78%, var(--monodoo-text));
+    --monodoo-focus-ring: var(--monodoo-accent);
+    --monodoo-overlay: color-mix(in srgb, var(--monodoo-background) 84%, transparent);
+    --monodoo-on-primary: #ffffff;
+    --monodoo-on-danger: #ffffff;
+    --monodoo-success-bg: color-mix(in srgb, var(--monodoo-success) 18%, var(--monodoo-surface));
+    --monodoo-warning-bg: color-mix(in srgb, var(--monodoo-warning) 20%, var(--monodoo-surface));
+    --monodoo-danger-bg: color-mix(in srgb, var(--monodoo-danger) 18%, var(--monodoo-surface));
+    --monodoo-code-bg: color-mix(in srgb, var(--monodoo-background) 74%, var(--monodoo-text));
+    --monodoo-scrollbar-thumb: var(--monodoo-border);
+    --monodoo-scrollbar-track: var(--monodoo-background);
+    --monodoo-shadow-color: color-mix(in srgb, var(--monodoo-background) 72%, transparent);
+    --monodoo-shadow-subtle: 0 0.125rem 0.5rem var(--monodoo-shadow-color);
+    --monodoo-shadow-raised: 0 0.75rem 2rem var(--monodoo-shadow-color);
+}
+
+html[data-monodoo-theme="light"] {
+    color-scheme: light;
 }
 
 html[data-monodoo-theme="dark"] {
     color-scheme: dark;
 }
 
-.o_web_client {
-    background-color: var(--monodoo-background);
+html[data-monodoo-theme] body {
+    background-color: var(--monodoo-bg);
+    color: var(--monodoo-text);
+}
+
+html[data-monodoo-theme] .o_web_client {
+    --bs-body-bg: var(--monodoo-bg);
+    --bs-body-color: var(--monodoo-text);
+    --bs-border-color: var(--monodoo-border);
+    --bs-secondary-bg: var(--monodoo-surface-alt);
+    --bs-tertiary-bg: var(--monodoo-bg);
+    --bs-emphasis-color: var(--monodoo-text);
+    --bs-secondary-color: var(--monodoo-text-muted);
+    --bs-link-color: var(--monodoo-link);
+    --bs-link-hover-color: var(--monodoo-link-hover);
+    background-color: var(--monodoo-bg);
     color: var(--monodoo-text);
     font-family: var(--monodoo-font-family, inherit);
 
-    .o_main_navbar {
-        background: var(--monodoo-brand) !important;
-        border-color: var(--monodoo-border);
+    .o_action_manager,
+    .o_action,
+    .o_content,
+    .o_view_controller,
+    .o_form_view,
+    .o_list_view,
+    .o_kanban_view {
+        background-color: var(--monodoo-bg);
+        color: var(--monodoo-text);
     }
 
-    .o_control_panel {
+    .o_main_navbar {
+        background-color: var(--monodoo-navbar-bg);
+        border-color: var(--monodoo-border);
+        color: var(--monodoo-navbar-text);
+
+        .o_menu_toggle,
+        .o_menu_brand,
+        .o_menu_sections .o_nav_entry,
+        .o_menu_sections .dropdown-toggle,
+        .o_navbar_apps_menu .dropdown-toggle,
+        .o_user_menu .dropdown-toggle,
+        a,
+        button {
+            color: var(--monodoo-navbar-text);
+        }
+
+        .o_menu_sections .o_nav_entry:hover,
+        .o_menu_sections .o_nav_entry:focus-visible,
+        .o_menu_sections .dropdown-toggle:hover,
+        .o_menu_sections .dropdown-toggle:focus-visible,
+        .o_user_menu .dropdown-toggle:hover,
+        .o_user_menu .dropdown-toggle:focus-visible {
+            background-color: color-mix(in srgb, var(--monodoo-navbar-text) 12%, transparent);
+        }
+    }
+
+    a:not(.btn) {
+        color: var(--monodoo-link);
+
+        &:hover,
+        &:focus-visible {
+            color: var(--monodoo-link-hover);
+        }
+    }
+
+    .text-muted,
+    .text-secondary,
+    .o_form_label.o_form_label_empty,
+    .o_field_widget.o_readonly_modifier {
+        color: var(--monodoo-text-muted);
+    }
+
+    .o_control_panel,
+    .o_breadcrumb,
+    .settings,
+    .settings_tab,
+    .o_searchview,
+    .o_searchview_input_container,
+    .o_cp_bottom_left,
+    .o_cp_bottom_right {
         background-color: var(--monodoo-surface);
         color: var(--monodoo-text);
         border-color: var(--monodoo-border);
+    }
+
+    .settings {
+        background-color: var(--monodoo-bg);
+        color: var(--monodoo-text);
+    }
+
+    .settings_tab {
+        background-color: var(--monodoo-sidebar-bg);
+        border-color: var(--monodoo-border);
+
+        .tab {
+            background-color: transparent;
+            color: var(--monodoo-text);
+
+            &:hover,
+            &:focus-visible {
+                background-color: var(--monodoo-hover-bg);
+                color: var(--monodoo-text);
+            }
+
+            &.selected {
+                background-color: var(--monodoo-selected-bg);
+                color: var(--monodoo-text);
+            }
+        }
+    }
+
+    .app_settings_block > h2 {
+        background-color: var(--monodoo-surface-alt);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o_form_renderer .o_setting_container {
+        .settings {
+            background-color: var(--monodoo-bg);
+            color: var(--monodoo-text);
+        }
+
+        .settings_tab {
+            background-color: var(--monodoo-sidebar-bg);
+            border-color: var(--monodoo-border);
+
+            .tab {
+                background-color: transparent;
+                color: var(--monodoo-text);
+
+                &:hover,
+                &:focus-visible {
+                    background-color: var(--monodoo-hover-bg);
+                    color: var(--monodoo-text);
+                }
+
+                &.selected {
+                    background-color: var(--monodoo-selected-bg);
+                    color: var(--monodoo-text);
+                }
+            }
+        }
+
+        .settings .app_settings_block h2,
+        .settings .app_settings_block .h2 {
+            background-color: var(--monodoo-surface-alt);
+            color: var(--monodoo-text);
+            border-color: var(--monodoo-border);
+        }
+    }
+
+    .o_searchview_input,
+    .o_searchview_facet,
+    .o_searchview_facet_label,
+    .o_searchview_autocomplete,
+    .o_searchview_autocomplete li {
+        background-color: var(--monodoo-input-bg);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o_searchview_autocomplete li:hover,
+    .o_searchview_autocomplete li:focus,
+    .o_searchview_autocomplete li.active {
+        background-color: var(--monodoo-hover-bg);
+        color: var(--monodoo-text);
     }
 
     .o_form_view .o_form_sheet_bg,
-    .o_list_renderer,
-    .o_kanban_renderer {
-        background-color: var(--monodoo-background);
-    }
-
     .o_form_view .o_form_sheet,
-    .o_list_renderer .o_list_table,
-    .o_kanban_renderer .o_kanban_record {
+    .o_form_view .o_form_renderer,
+    .o_form_view .o_inner_group,
+    .o_form_view .o_group,
+    .o_base_settings_view .o_form_renderer,
+    .o_settings_container,
+    .o_setting_container,
+    .o_setting_box,
+    .o_setting_left_pane,
+    .o_setting_right_pane {
         background-color: var(--monodoo-surface);
         color: var(--monodoo-text);
         border-color: var(--monodoo-border);
     }
 
-    .text-muted {
-        color: var(--monodoo-muted) !important;
+    .o_setting_box {
+        .o_form_label,
+        .o_setting_right_pane > label,
+        .o_setting_right_pane .o_form_label {
+            color: var(--monodoo-text);
+        }
+
+        .text-muted,
+        .o_setting_help,
+        .o_setting_description {
+            color: var(--monodoo-text-muted);
+        }
     }
 
-    .btn-primary {
+    .o_list_renderer,
+    .o_list_renderer .o_list_table,
+    .o_list_renderer .o_list_table thead,
+    .o_list_renderer .o_list_table tbody,
+    .o_list_renderer .o_list_table tfoot,
+    .o_list_renderer .o_list_table tr,
+    .o_list_renderer .o_list_table th,
+    .o_list_renderer .o_list_table td {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o_list_renderer .o_data_row:hover > .o_data_cell,
+    .o_list_renderer .o_data_row.o_selected_row > .o_data_cell,
+    .o_list_renderer .o_data_row.o_selected_row:hover > .o_data_cell {
+        background-color: var(--monodoo-hover-bg);
+        color: var(--monodoo-text);
+    }
+
+    .o_kanban_renderer,
+    .o_kanban_renderer .o_kanban_record,
+    .o_kanban_renderer .o_kanban_record .o_kanban_card_content,
+    .o_kanban_renderer .o_kanban_record .o_kanban_card_manage_section {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o_kanban_renderer .o_kanban_record:hover,
+    .o_kanban_renderer .o_kanban_record:focus-within {
+        background-color: var(--monodoo-hover-bg);
+    }
+
+    .o_notebook .nav-tabs,
+    .o_notebook .nav-link,
+    .nav-tabs,
+    .nav-pills .nav-link {
+        border-color: var(--monodoo-border);
+        color: var(--monodoo-text-muted);
+    }
+
+    .o_notebook .nav-link:hover,
+    .o_notebook .nav-link:focus-visible,
+    .nav-tabs .nav-link:hover,
+    .nav-pills .nav-link:hover {
+        background-color: var(--monodoo-hover-bg);
+        color: var(--monodoo-text);
+    }
+
+    .o_notebook .nav-link.active,
+    .nav-tabs .nav-link.active,
+    .nav-pills .nav-link.active {
+        background-color: var(--monodoo-surface);
+        border-color: var(--monodoo-border) var(--monodoo-border) var(--monodoo-primary);
+        color: var(--monodoo-text);
+    }
+
+    input:not([type="checkbox"]):not([type="radio"]),
+    textarea,
+    select,
+    .form-control,
+    .form-select,
+    .o_input,
+    .o_field_widget .o_input {
+        background-color: var(--monodoo-input-bg);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+        caret-color: var(--monodoo-primary);
+    }
+
+    input::placeholder,
+    textarea::placeholder,
+    .o_searchview_input::placeholder {
+        color: var(--monodoo-text-muted);
+        opacity: 1;
+    }
+
+    input:disabled,
+    textarea:disabled,
+    select:disabled,
+    .form-control:disabled,
+    .form-select:disabled,
+    .o_input:disabled {
+        background-color: var(--monodoo-surface-alt);
+        color: var(--monodoo-text-disabled);
+        border-color: var(--monodoo-border-subtle);
+    }
+
+    input[type="checkbox"],
+    input[type="radio"],
+    .form-check-input {
+        accent-color: var(--monodoo-primary);
+    }
+
+    .btn {
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+
+        &:hover,
+        &:focus-visible,
+        &.active,
+        &:active {
+            background-color: var(--monodoo-hover-bg);
+            border-color: var(--monodoo-primary);
+            color: var(--monodoo-text);
+        }
+    }
+
+    .btn-primary,
+    .btn-fill-primary {
         background-color: var(--monodoo-primary);
         border-color: var(--monodoo-primary);
+        color: var(--monodoo-on-primary);
+
+        &:hover,
+        &:focus-visible,
+        &.active,
+        &:active {
+            background-color: color-mix(in srgb, var(--monodoo-primary) 84%, var(--monodoo-text));
+            border-color: color-mix(in srgb, var(--monodoo-primary) 84%, var(--monodoo-text));
+            color: var(--monodoo-on-primary);
+        }
     }
 
     .btn-outline-primary {
         color: var(--monodoo-primary);
         border-color: var(--monodoo-primary);
+
+        &:hover,
+        &:focus-visible,
+        &.active,
+        &:active {
+            background-color: var(--monodoo-primary);
+            color: var(--monodoo-on-primary);
+        }
+    }
+
+    .btn-secondary,
+    .btn-light,
+    .btn-outline-secondary,
+    .btn-outline-light {
+        background-color: var(--monodoo-surface-alt);
+        border-color: var(--monodoo-border);
+        color: var(--monodoo-text);
+    }
+
+    .btn-link {
+        color: var(--monodoo-link);
+
+        &:hover,
+        &:focus-visible {
+            color: var(--monodoo-link-hover);
+        }
+    }
+
+    .dropdown-menu,
+    .popover,
+    .tooltip-inner,
+    .o_popover {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+        box-shadow: var(--monodoo-shadow-raised);
+    }
+
+    .dropdown-item,
+    .popover-body,
+    .popover-header {
+        color: var(--monodoo-text);
+        background-color: transparent;
+        border-color: var(--monodoo-border);
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus,
+    .dropdown-item.active,
+    .dropdown-item:active {
+        background-color: var(--monodoo-hover-bg);
+        color: var(--monodoo-text);
+    }
+
+    .modal-content,
+    .o_dialog .modal-content {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+        box-shadow: var(--monodoo-shadow-raised);
+    }
+
+    .modal-header,
+    .modal-footer,
+    .o_dialog .modal-header,
+    .o_dialog .modal-footer {
+        border-color: var(--monodoo-border);
+    }
+
+    .modal-backdrop {
+        background-color: var(--monodoo-background);
+    }
+
+    .card,
+    .table,
+    .table > :not(caption) > * > * {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .table-hover > tbody > tr:hover > *,
+    .card-header,
+    .card-footer {
+        background-color: var(--monodoo-surface-alt);
+    }
+
+    .badge {
+        background-color: var(--monodoo-surface-alt);
+        color: var(--monodoo-text);
+    }
+
+    .text-bg-primary,
+    .bg-primary {
+        background-color: var(--monodoo-primary) !important;
+        color: var(--monodoo-on-primary) !important;
+    }
+
+    .text-bg-success,
+    .bg-success {
+        background-color: var(--monodoo-success) !important;
+        color: var(--monodoo-on-primary) !important;
+    }
+
+    .text-bg-warning,
+    .bg-warning {
+        background-color: var(--monodoo-warning) !important;
+        color: var(--monodoo-text) !important;
+    }
+
+    .text-bg-danger,
+    .bg-danger {
+        background-color: var(--monodoo-danger) !important;
+        color: var(--monodoo-on-danger) !important;
+    }
+
+    .o-mail-Chatter,
+    .o-mail-Chatter-top,
+    .o-mail-Chatter-content,
+    .o-mail-Composer,
+    .o-mail-Message {
+        background-color: var(--monodoo-surface);
+        color: var(--monodoo-text);
+        border-color: var(--monodoo-border);
+    }
+
+    .o-mail-Message-header,
+    .o-mail-Message-metadata,
+    .o-mail-Thread-empty {
+        color: var(--monodoo-text-muted);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--monodoo-focus-ring);
+        outline-offset: 2px;
+    }
+
+    ::selection {
+        background-color: var(--monodoo-selected-bg);
+        color: var(--monodoo-text);
+    }
+
+    * {
+        scrollbar-color: var(--monodoo-scrollbar-thumb) var(--monodoo-scrollbar-track);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html[data-monodoo-theme] .o_web_client * {
+        scroll-behavior: auto;
+        transition-duration: 0.01ms;
+        animation-duration: 0.01ms;
     }
 }

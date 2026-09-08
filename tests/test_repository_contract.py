@@ -158,6 +158,49 @@ class RepositoryContractTest(unittest.TestCase):
         ):
             self.assertTrue((theme / relative).is_file(), relative)
 
+    def test_theme_global_styles_define_shared_semantic_roles(self):
+        source = (
+            ROOT / "monodoo_theme/static/src/theme/theme.scss"
+        ).read_text(encoding="utf-8")
+        for token in (
+            "--monodoo-bg",
+            "--monodoo-surface-alt",
+            "--monodoo-sidebar-bg",
+            "--monodoo-navbar-bg",
+            "--monodoo-input-bg",
+            "--monodoo-hover-bg",
+            "--monodoo-active-bg",
+            "--monodoo-selected-bg",
+            "--monodoo-text-muted",
+            "--monodoo-text-disabled",
+            "--monodoo-link",
+            "--monodoo-focus-ring",
+            "--monodoo-overlay",
+        ):
+            self.assertIn(token, source)
+        for selector in (
+            ".o_main_navbar",
+            ".o_control_panel",
+            ".o_form_view",
+            ".o_list_renderer",
+            ".o_kanban_renderer",
+            ".o_settings_container",
+            ".dropdown-menu",
+            ".modal-content",
+            ".o-mail-Chatter",
+        ):
+            self.assertIn(selector, source)
+        self.assertIn('html[data-monodoo-theme="light"]', source)
+        self.assertIn('html[data-monodoo-theme="dark"]', source)
+
+    def test_component_styles_do_not_ship_light_theme_fallbacks(self):
+        for relative in (
+            "monodoo_home/static/src/home/home.scss",
+            "monodoo_appsbar/static/src/appsbar/appsbar.scss",
+        ):
+            source = (ROOT / relative).read_text(encoding="utf-8")
+            self.assertNotRegex(source, r"var\(--monodoo-[^)]+,\s*#")
+
     def test_theme_frontend_uses_services_not_webclient_patches(self):
         path = ROOT / "monodoo_theme" / "static" / "src" / "theme" / "theme_service.js"
         self.assertTrue(path.is_file(), str(path.relative_to(ROOT)))

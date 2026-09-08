@@ -7,31 +7,31 @@
     width: 13rem;
     overflow-x: hidden;
     overflow-y: auto;
-    background: var(--monodoo-surface, #fff);
-    color: var(--monodoo-text, #212529);
-    border-right: 1px solid var(--monodoo-border, #dee2e6);
+    background: var(--monodoo-sidebar-bg);
+    color: var(--monodoo-text);
+    border-right: 1px solid var(--monodoo-border);
     transition: width 140ms ease;
 }
 
 .o_monodoo_appsbar_link {
     min-height: 3rem;
     padding: 0.45rem 0.65rem;
-    color: var(--monodoo-text, #212529);
+    color: var(--monodoo-text);
     border: 0;
     border-radius: 0;
     text-align: left;
 
     &:hover,
     &:focus-visible {
-        color: var(--monodoo-text, #212529);
-        background: color-mix(in srgb, var(--monodoo-primary, #71639e) 8%, transparent);
+        color: var(--monodoo-text);
+        background: var(--monodoo-hover-bg);
     }
 }
 
 .o_monodoo_appsbar_item.active .o_monodoo_appsbar_link {
-    color: var(--monodoo-primary, #71639e);
-    background: color-mix(in srgb, var(--monodoo-primary, #71639e) 12%, transparent);
-    box-shadow: inset 3px 0 0 var(--monodoo-primary, #71639e);
+    color: var(--monodoo-primary);
+    background: var(--monodoo-selected-bg);
+    box-shadow: inset 3px 0 0 var(--monodoo-primary);
 }
 
 .o_monodoo_appsbar_icon,
@@ -46,7 +46,7 @@
 }
 
 .o_monodoo_appsbar_fallback_icon {
-    color: var(--monodoo-muted, #6c757d);
+    color: var(--monodoo-text-muted);
 }
 
 .o_monodoo_appsbar_name {
