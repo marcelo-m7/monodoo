@@ -50,6 +50,9 @@ class RepositoryContractTest(unittest.TestCase):
     def test_dependency_boundary(self):
         self.assertEqual(load_manifest("monodoo_core")["depends"], ["base"])
         self.assertEqual(load_manifest("monodoo_home")["depends"], ["web", "monodoo_core"])
+        home_style = (ROOT / "monodoo_home/static/src/home/home.scss").read_text(encoding="utf-8")
+        self.assertIn("var(--monodoo-bg, var(--bs-body-bg, #fff))", home_style)
+        self.assertIn("var(--monodoo-primary, var(--bs-primary, #0d6efd))", home_style)
         self.assertEqual(
             load_manifest("monodoo_theme")["depends"],
             ["base_setup", "web", "monodoo_core"],
