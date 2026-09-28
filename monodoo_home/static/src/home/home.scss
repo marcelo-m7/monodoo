@@ -1,6 +1,6 @@
 .o_monodoo_home {
-    background: var(--monodoo-bg);
-    color: var(--monodoo-text);
+    background: var(--monodoo-bg, var(--bs-body-bg, #fff));
+    color: var(--monodoo-text, var(--bs-body-color, #212529));
 }
 
 .o_monodoo_home_inner {
@@ -9,13 +9,13 @@
 
 .o_monodoo_search {
     max-width: 24rem;
-    background-color: var(--monodoo-input-bg);
-    color: var(--monodoo-text);
-    border-color: var(--monodoo-border);
+    background-color: var(--monodoo-input-bg, var(--bs-body-bg, #fff));
+    color: var(--monodoo-text, var(--bs-body-color, #212529));
+    border-color: var(--monodoo-border, var(--bs-border-color, #dee2e6));
 }
 
 .o_monodoo_section_title {
-    color: var(--monodoo-text);
+    color: var(--monodoo-text, var(--bs-body-color, #212529));
     font-weight: 600;
 }
 
@@ -25,17 +25,17 @@
 
 .o_monodoo_app_card {
     min-height: 7rem;
-    background: var(--monodoo-surface);
-    color: var(--monodoo-text);
-    border: 1px solid var(--monodoo-border);
-    border-radius: var(--monodoo-radius-md);
+    background: var(--monodoo-surface, var(--bs-body-bg, #fff));
+    color: var(--monodoo-text, var(--bs-body-color, #212529));
+    border: 1px solid var(--monodoo-border, var(--bs-border-color, #dee2e6));
+    border-radius: var(--monodoo-radius-md, var(--bs-border-radius, 0.375rem));
     transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 
     &:hover,
     &:focus-visible {
-        color: var(--monodoo-text);
-        border-color: var(--monodoo-primary);
-        box-shadow: var(--monodoo-shadow-subtle);
+        color: var(--monodoo-text, var(--bs-body-color, #212529));
+        border-color: var(--monodoo-primary, var(--bs-primary, #0d6efd));
+        box-shadow: var(--monodoo-shadow-subtle, 0 .125rem .25rem rgba(0, 0, 0, .075));
         transform: translateY(-1px);
     }
 
@@ -57,15 +57,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: var(--monodoo-text-muted);
-    background: var(--monodoo-surface-alt);
+    color: var(--monodoo-text-muted, var(--bs-secondary-color, #6c757d));
+    background: var(--monodoo-surface-alt, var(--bs-secondary-bg, #e9ecef));
     border: 1px solid transparent;
     border-radius: 50%;
 
     &:hover,
     &:focus-visible,
     &.is-favorite {
-        color: var(--monodoo-primary);
-        border-color: var(--monodoo-border);
+        color: var(--monodoo-primary, var(--bs-primary, #0d6efd));
+        border-color: var(--monodoo-border, var(--bs-border-color, #dee2e6));
     }
 }
