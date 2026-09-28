@@ -196,13 +196,19 @@ class RepositoryContractTest(unittest.TestCase):
         self.assertIn('html[data-monodoo-theme="light"]', source)
         self.assertIn('html[data-monodoo-theme="dark"]', source)
 
-    def test_component_styles_do_not_ship_light_theme_fallbacks(self):
-        for relative in (
-            "monodoo_home/static/src/home/home.scss",
-            "monodoo_appsbar/static/src/appsbar/appsbar.scss",
-        ):
-            source = (ROOT / relative).read_text(encoding="utf-8")
-            self.assertNotRegex(source, r"var\(--monodoo-[^)]+,\s*#")
+    def test_theme_owned_component_styles_do_not_ship_light_theme_fallbacks(self):
+        source = (
+            ROOT / "monodoo_appsbar/static/src/appsbar/appsbar.scss"
+        ).read_text(encoding="utf-8")
+        self.assertNotRegex(source, r"var\(--monodoo-[^)]+,\s*#")
+
+    def test_home_can_render_without_monodoo_theme(self):
+        source = (
+            ROOT / "monodoo_home/static/src/home/home.scss"
+        ).read_text(encoding="utf-8")
+        self.assertIn("var(--monodoo-bg, var(--bs-body-bg, #fff))", source)
+        self.assertIn("var(--monodoo-text, var(--bs-body-color, #212529))", source)
+        self.assertIn("var(--monodoo-primary, var(--bs-primary, #0d6efd))", source)
 
     def test_theme_frontend_uses_services_not_webclient_patches(self):
         path = ROOT / "monodoo_theme" / "static" / "src" / "theme" / "theme_service.js"
